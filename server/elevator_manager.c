@@ -3,6 +3,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int main(int argc, char* argv[], char* envp[]) {
-	
+int elevator_routine(Configuration config) {
+	/* code goes here */
 }
