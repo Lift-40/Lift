@@ -1,3 +1,2 @@
 void storeElevator(Elevator elev);
-Elevator readElevator();
-
+Elevator readElevator(char *ip);
