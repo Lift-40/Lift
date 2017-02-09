@@ -32,8 +32,12 @@ void storeRequest(Request newReq){
 // This is done in two methods in order to not remove requests till the other side
 // has confirm that it has arrived
 Request getRequest(){
-    Request req = (*firstReq).req;
-    return req;
+    if (firstReq == NULL) {
+        return NULL;
+    } else {
+	Request req = (*firstReq).req;
+	return req;
+    }
 }
 
 void removeRequest(){    

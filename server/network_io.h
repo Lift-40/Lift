@@ -8,16 +8,16 @@ typedef struct {
 } Request;
 
 typedef enum { 
-    Req,
-    Elev_state,
+    req,
+    elev_state,
     light_update
-} MsgType;
+} msgType;
 
 typedef struct {
     char * senderIP;
-    MsgType type;
+    msgType type;
     Request request; 
-    Elevator elev_state;
+    Elevator elev_struct;
 } Message;
 
 void sendMessage(Message msg);

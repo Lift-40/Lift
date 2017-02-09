@@ -1,13 +1,12 @@
 #include "network_io.h"
 #include "../network_driver/sverresnetwork.h"
+#include "configuration.h"
 
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 
-#define NUM_IPS 3
-
-char ips[NUM_IPS][32];
+char ips[MAX_ELEVATORS][32];
 
 typedef struct Queued_Message QueuedMsg;
 
@@ -53,13 +52,17 @@ int add_msg_to_queue (Message newMsg, QueuedMsg *lastMsg, QueuedMsg *firstMsg){
 }
 
 Message get_msg_from_queue (QueuedMsg *firstMsg){
-    Message msg = (*firstMsg).msg;
+    if (firstMsg == NULL) {
+        return NULL;
+    } else {
+        Message msg = (*firstMsg).msg;
 
-    //QueuedMsg *secondMsg = (*firstMsg) -> nextMsg;
-    //*firstMsg = secondMsg;
-    firstMsg = (*firstMsg).nextMsg;
+        //QueuedMsg *secondMsg = (*firstMsg) -> nextMsg;
+        //*firstMsg = secondMsg;
+        firstMsg = (*firstMsg).nextMsg;
     
-    return msg;
+    	return msg;
+    }
 }
 
 // typedef void (*TMessageCallback)(const char * ip, char * data, int datalength);
@@ -77,21 +80,21 @@ void receiveTCPMsg(const char * ip, char * data, int datalength){
 
 
 void initIps(){
-    for(int i = 0; i < NUM_IPS; i++){
+    for(int i = 0; i < MAX_ELEVATORS; i++){
         ips[i][0] = 0;
     }
 }
 
 void addIp(const char * ip){
     int exists = 0;
-    for(int i = 0; i < NUM_IPS; i++){
+    for(int i = 0; i < MAX_ELEVATORS; i++){
         if(strncmp( ip, ips[i], strlen(ips[i]) ) == 0 && ips[i][0] != 0 ){
 	    printf("The ip %s already exists\n",ip);
 	    exists = 1;
 	}
     }
     if (exists == 0){
-    	for(int i = 0; i < NUM_IPS; i++){
+    	for(int i = 0; i < MAX_ELEVATORS; i++){
             if(ips[i][0] == 0){
                 printf("Adding connection %s to index %d\n",ip,i);
                 strncpy( ips[i], ip, 30 );
@@ -102,7 +105,7 @@ void addIp(const char * ip){
 }
 
 void removeIp(const char * ip){
-    for(int i = 0; i < NUM_IPS; i++){
+    for(int i = 0; i < MAX_ELEVATORS; i++){
         if(strncmp( ip, ips[i], strlen(ips[i]) ) == 0 && ips[i][0] != 0){
             printf("Removing connection %s from index %d\n",ip,i);
             ips[i][0] = 0;
@@ -136,7 +139,7 @@ Message receiveMessage(){
 }
 
 bool connectionAvailable(char *ipAddress){
-    for(int i = 0; i < NUM_IPS; ++i) {
+    for(int i = 0; i < MAX_ELEVATORS; ++i) {
         if (strcmp(ips[i], ipAddress) == 0) {
 	    return true;
 	}

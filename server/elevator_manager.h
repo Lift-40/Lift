@@ -1,1 +1,2 @@
-int elevator_routine(Configuration config);
+int server_init();
+int server_routine();
