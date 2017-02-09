@@ -1,6 +1,17 @@
 #include <stdbool.h>
-#include <elevator_io_types.h>
-#include <elevator.h>
+#include "../elev_algo/elevator_io_types.h"
+#include "../elev_algo/elevator.h"
+
+typedef struct {
+    int floor;
+    Button button; 
+} Request;
+
+typedef enum { 
+    Req,
+    Elev_state,
+    light_update
+} MsgType;
 
 typedef struct {
     char * senderIP;
@@ -9,20 +20,8 @@ typedef struct {
     Elevator elev_state;
 } Message;
 
-typedef struct {
-    int floor;
-    Button button; 
-} Request;
-
-typedef enum { 
-    Request,
-    Elev_state,
-    light_update
-} MsgType;
-
 void sendMessage(Message msg);
-Message receiveMessage();
+Message receiveMessage(void);
 bool connectionAvailable(char *ipAddress);
-void broadcastIP();
-void addIP(char *ip);
-void removeIP(char *ip);
+void broadcastIP(void);
+void networkInit(void);
