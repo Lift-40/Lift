@@ -1,4 +1,4 @@
-void storeRequest();
-void getRequest();
+void storeRequest(Request newReq);
+Request getRequest();
 void removeRequest();
 
