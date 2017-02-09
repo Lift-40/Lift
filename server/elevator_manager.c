@@ -1,4 +1,5 @@
 #include "elevator_manager.h"
+#include "elevator_io_types.h"
 #include "network_io.h"
 #include "queue.h"
 #include "configuration.h"
@@ -46,7 +47,25 @@ int server_routine() {
 //Button button; 
 
 void findBestElev(Request request){
-    // TODO:
+    int floorOfReq = request.floor;
+    Button pressedButton = request.button;
+
+    Elevator elev_states[MAX_ELEVATORS];
+
+    char bestElevatorIP[32] = 0;
+
+    for (int i = 0; i < MAX_ELEVATORS; i++) {
+        Elevator currentElevator = readElevator(available_elevators[i]);
+        if (currentElevator.floor)
+    }
+    
+    // If one elevator is currently idle in the requested floor, select that one
+    // else if the pressed button is B_HallDown check if an elevator above is going down, consider that one (take the floor)
+	// if there's is an idle elevator closer, select that one
+	// else, select the one that was checked in first place
+    // else if the pressed button is B_HallUp check if an elevator below is going up, consider that one (take the floor)
+	// if there's is an idle elevator closer, select that one
+	// else, select the one that was checked in first place
 }
 
 
