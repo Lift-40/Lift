@@ -98,8 +98,6 @@ char findBestElev(Request request){
 	return bestElevatorIP;
 }
 
-char getMyIP
-
 int server_init() {
     networkInit();
 }
@@ -129,8 +127,12 @@ int server_routine() {
 		char bestElevIP[32] = 0;
         bestElevIP = findBestElev(firstReqInQueue);
 		// TODO: Send order to that best elevator
-		Message msg = {bestElevIP, req, firstReqInQueue, NULL};
-		sendMessage(msg);
+		Message msg = {getMyIP(), bestElevIP, req, firstReqInQueue, NULL};
+		if (connectionAvailable(bestElevIP)){
+			sendMessage(msg);
+		} else {
+			removeElev(bestElevIP);
+		}
     }
 
     // Check if the connection with the best elevator is available
