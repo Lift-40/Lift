@@ -10,12 +10,10 @@
 #include "timer.h"
 #include "../network_driver/network_io.h"
 
-Message msg;
-
+static Message msg;
 static Elevator             elevator;
 static ElevOutputDevice     outputDevice;
 static serverIP             char[32];
-
 
 static void __attribute__((constructor)) fsm_init(){
     elevator = elevator_uninitialized();
@@ -28,7 +26,8 @@ static void __attribute__((constructor)) fsm_init(){
         )
     )
 	
-	msg.senderIP = getmyIP;
+	msg.senderIP = getMyIP();
+	msg.serverIP = serverIP;
     
     outputDevice = elevio_getOutputDevice();
 }
