@@ -3,5 +3,7 @@
 
 int main() {
     server_init();
-    server_routine();
+	while(1){
+		server_routine();
+	}
 }
