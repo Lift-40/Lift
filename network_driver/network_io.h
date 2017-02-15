@@ -8,6 +8,11 @@ typedef struct {
 } Request;
 
 typedef enum { 
+    server,
+	elevator
+} senderRole;
+
+typedef enum { 
     req,
     elev_state,
     light_update
@@ -19,6 +24,7 @@ typedef struct {
     msgType type;
     Request request; 
     Elevator elev_struct;
+	senderRole role;
 } Message;
 
 void sendMessage(Message msg);

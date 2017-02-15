@@ -5,6 +5,7 @@
 
 #include "con_load.h"
 #include "elevator_io_device.h"
+#include "../network_driver/network_io.h"
 #include "fsm.h"
 #include "timer.h"
 
@@ -15,6 +16,8 @@ int main(void){
     con_load("elevator.con",
         con_val("inputPollRate_ms", &inputPollRate_ms, "%d")
     )
+	
+	networkInit();
     
     ElevInputDevice input = elevio_getInputDevice();    
     
@@ -35,6 +38,19 @@ int main(void){
                 }
             }
         }
+		
+		{ // Network
+			Message msg;
+			// Call receive message
+			msg = receiveMessage();
+			if (msg != NULL) {
+				// if it's a request type then add it to the queue         
+				if (msg.type == req) {
+					fsm_onRequestButtonPress(msg.request.floor, msg.request.button);
+				}
+				// The light message type needs to be handled here
+			}	
+		}
         
         { // Floor sensor
             static int prev;
