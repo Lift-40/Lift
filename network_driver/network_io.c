@@ -100,7 +100,6 @@ void addIp(const char * ip){
             if(ips[i][0] == 0){
                 printf("Adding connection %s to index %d\n",ip,i);
                 strncpy( ips[i], ip, 30 );
-                return;
             }
         }
     }
@@ -111,7 +110,6 @@ void removeIp(const char * ip){
         if(strncmp( ip, ips[i], strlen(ips[i]) ) == 0 && ips[i][0] != 0){
             printf("Removing connection %s from index %d\n",ip,i);
             ips[i][0] = 0;
-            return;
         }
     }
 }
