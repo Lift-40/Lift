@@ -26,7 +26,7 @@ static void __attribute__((constructor)) fsm_init(){
         )
     )
 	
-	msg.senderIP = getMyIP();
+	msg.senderIP = getMyIP();	
 	msg.serverIP = serverIP;
     
     outputDevice = elevio_getOutputDevice();
