@@ -9,6 +9,8 @@
 
 char available_elevators[MAX_ELEVATORS][32];
 
+/*-----------------------------INTERNAL FUNCIONS---------------------------------*/
+
 char findBestElev(Request request){
     int floorOfReq = request.floor;
     Button pressedButton = request.button;
@@ -98,9 +100,30 @@ char findBestElev(Request request){
 	return bestElevatorIP;
 }
 
+void initElevs(){
+    for(int i = 0; i < MAX_ELEVATORS; i++){
+        available_elevators[i][0] = 0;
+    }
+}
+
+void removeElev(const char * ip){
+    for(int i = 0; i < MAX_ELEVATORS; i++){
+        if(strncmp( ip, available_elevators[i], strlen(available_elevators[i]) ) == 0 && available_elevators[i][0] != 0){
+            printf("Removing elevator %s from available_elevators %d\n", ip, i);
+            available_elevators[i][0] = 0;
+            return;
+        }
+    }
+}
+
+/*-----------------------------EXTERNAL FUNCIONS---------------------------------*/
+
 int server_init() {
+	initElevs();
     networkInit();
 }
+
+// TODO: Fill the available_elevators array with the ips of the working elevator
 
 int server_routine() {	
     /* code goes here */
@@ -126,16 +149,14 @@ int server_routine() {
     if (firstReqInQueue != NULL) {
 		char bestElevIP[32] = 0;
         bestElevIP = findBestElev(firstReqInQueue);
-		// TODO: Send order to that best elevator
 		Message msg = {getMyIP(), bestElevIP, req, firstReqInQueue, NULL};
+		// Check if the connection with the best elevator is available
 		if (connectionAvailable(bestElevIP)){
+			// if so send message to the best elevator
 			sendMessage(msg);
 		} else {
+			// else remove it from the available elevators list
 			removeElev(bestElevIP);
 		}
     }
-
-    // Check if the connection with the best elevator is available
-    // if so send message to the best elevator
-    // else remove it from the available elevators list
 }
