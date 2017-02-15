@@ -151,7 +151,7 @@ int server_routine() {
     msg = receiveMessage();
     if (msg != NULL) {
 		// if it's a request type then add it to the queue
-		
+		addElev(msg.senderIP);
 		if (msg.type == req){
 	    	storeRequest(msg.request);
 		}
