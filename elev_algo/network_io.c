@@ -89,9 +89,9 @@ void addIp(const char * ip){
     int exists = 0;
     for(int i = 0; i < MAX_ELEVATORS; i++){
         if(strncmp( ip, ips[i], strlen(ips[i]) ) == 0 && ips[i][0] != 0 ){
-	    printf("The ip %s already exists\n",ip);
-	    exists = 1;
-	}
+			printf("The ip %s already exists\n",ip);
+			exists = 1;
+		}
     }
     if (exists == 0){
     	for(int i = 0; i < MAX_ELEVATORS; i++){
@@ -118,9 +118,9 @@ void removeIp(const char * ip){
 // created == 1 --> connection created
 void tcpConnectionCallback(const char * ip, int created){
     if (created == 1){
-	addIp(ip);
+		addIp(ip);
     }else{ 
-	removeIp(ip);
+		removeIp(ip);
     }
 }
 
@@ -141,8 +141,8 @@ Message receiveMessage(){
 bool connectionAvailable(char *ipAddress){
     for(int i = 0; i < MAX_ELEVATORS; ++i) {
         if (strcmp(ips[i], ipAddress) == 0) {
-	    return true;
-	}
+	    	return true;
+		}
     }
     return false;
 }
