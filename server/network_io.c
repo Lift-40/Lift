@@ -16,6 +16,8 @@ struct Queued_Message{
     //int          value;
 };
 
+#define NETW_INTERFACE "eth0"
+
 QueuedMsg *firstMsg;
 QueuedMsg *lastMsg;
 
@@ -130,7 +132,7 @@ void tcpConnectionCallback(const char * ip, int created){
 void sendMessage(Message msg){
     char data[sizeof( Message )];
     memcpy( data, &msg, sizeof( Message ) );
-    tcp_send(msg.senderIP, &data[0], sizeof( Message ));
+    tcp_send(msg.destinationIP, &data[0], sizeof( Message ));
 }
 
 // ip of the elevator that sent the message
@@ -149,9 +151,13 @@ bool connectionAvailable(char *ipAddress){
 
 void broadcastIP(){
     char *iP = 0;
-    iP = getMyIpAddress("enp4s0");
+    iP = getMyIpAddress(NETW_INTERFACE);
     int tcpPortNumber = 5540; // Should be in a config file
     udp_broadcast( tcpPortNumber, iP, strlen(iP) ); // Try with sizeof()
+}
+
+char * getmyIP() {
+	return getMyIpAddress(NETW_INTERFACE);
 }
 
 void networkInit() {

@@ -8,9 +8,13 @@
 #include "elevator_io_device.h"
 #include "requests.h"
 #include "timer.h"
+#include "../network_driver/network_io.h"
+
+Message msg;
 
 static Elevator             elevator;
 static ElevOutputDevice     outputDevice;
+static serverIP             char[32];
 
 
 static void __attribute__((constructor)) fsm_init(){
@@ -23,6 +27,8 @@ static void __attribute__((constructor)) fsm_init(){
             con_match(CV_InDirn)
         )
     )
+	
+	msg.senderIP = getmyIP;
     
     outputDevice = elevio_getOutputDevice();
 }
@@ -71,13 +77,17 @@ void fsm_onRequestButtonPress(int btn_floor, Button btn_type){
             elevator.behaviour = EB_Moving;
         }
         break;
-        
     }
     
     setAllLights(elevator);
     
     printf("\nNew state:\n");
     elevator_print(elevator);
+	msg.serverIP = serverIP;
+	msg.type = elev_state;
+	msg.request = (Request){btn_floor,btn_type};
+	msg.elev_struct = elevator;
+	
 }
 
 
@@ -107,7 +117,12 @@ void fsm_onFloorArrival(int newFloor){
     }
     
     printf("\nNew state:\n");
-    elevator_print(elevator); 
+    elevator_print(elevator);
+	msg.serverIP = serverIP;
+	msg.type = elev_state;
+	msg.request = NULL;
+	msg.elev_struct = elevator;
+	
 }
 
 
@@ -137,6 +152,11 @@ void fsm_onDoorTimeout(void){
     
     printf("\nNew state:\n");
     elevator_print(elevator);
+	msg.serverIP = serverIP;
+	msg.type = elev_state;
+	msg.request = NULL;
+	msg.elev_struct = elevator;
+	
 }
 
 

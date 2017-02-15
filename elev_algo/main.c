@@ -8,7 +8,6 @@
 #include "fsm.h"
 #include "timer.h"
 
-
 int main(void){
     printf("Started!\n");
     

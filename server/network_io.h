@@ -15,6 +15,7 @@ typedef enum {
 
 typedef struct {
     char * senderIP;
+	char * destinationIP;
     msgType type;
     Request request; 
     Elevator elev_struct;
@@ -25,3 +26,4 @@ Message receiveMessage(void);
 bool connectionAvailable(char *ipAddress);
 void broadcastIP(void);
 void networkInit(void);
+char * getMyIP();
