@@ -1,5 +1,5 @@
 #include "elevator_storage.h"
-#include "configuration.h"
+#include "../configuration.h"
 #include "../elev_algo/elevator.h"
 
 Elevator elev_states[MAX_ELEVATORS];
