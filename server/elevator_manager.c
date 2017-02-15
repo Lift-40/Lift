@@ -106,6 +106,24 @@ void initElevs(){
     }
 }
 
+void addElev(const char * ip){
+    int exists = 0;
+    for(int i = 0; i < MAX_ELEVATORS; i++){
+        if(strncmp( ip, available_elevators[i], strlen(available_elevators[i]) ) == 0 && available_elevators[i][0] != 0 ){
+	    printf("The ip %s already exists in available_elevators\n",ip);
+	    exists = 1;
+	}
+    }
+    if (exists == 0){
+    	for(int i = 0; i < MAX_ELEVATORS; i++){
+            if(available_elevators[i][0] == 0){
+                printf("Adding elevator %s to index %d\n",ip,i);
+                strncpy( available_elevators[i], ip, 30 );
+            }
+        }
+    }
+}
+
 void removeElev(const char * ip){
     for(int i = 0; i < MAX_ELEVATORS; i++){
         if(strncmp( ip, available_elevators[i], strlen(available_elevators[i]) ) == 0 && available_elevators[i][0] != 0){
@@ -149,7 +167,7 @@ int server_routine() {
     if (firstReqInQueue != NULL) {
 		char bestElevIP[32] = 0;
         bestElevIP = findBestElev(firstReqInQueue);
-		Message msg = {getMyIP(), bestElevIP, req, firstReqInQueue, NULL};
+		Message msg = {getMyIP(), bestElevIP, req, firstReqInQueue, NULL, server};
 		// Check if the connection with the best elevator is available
 		if (connectionAvailable(bestElevIP)){
 			// if so send message to the best elevator
