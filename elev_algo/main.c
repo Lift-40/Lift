@@ -18,8 +18,12 @@ int main(void){
     )
 	
 	networkInit();
+	
+	broadcastIP(elevator);
     
-    ElevInputDevice input = elevio_getInputDevice();    
+    ElevInputDevice input = elevio_getInputDevice();
+	
+	char serverIP[32] = 0;
     
     if(input.floorSensor() == -1){
         fsm_onInitBetweenFloors();
@@ -43,8 +47,9 @@ int main(void){
 			Message msg;
 			// Call receive message
 			msg = receiveMessage();
-			if (msg != NULL) {
-				// if it's a request type then add it to the queue         
+			if (msg != NULL && msg.role == server) {
+				// if it's a request type then add it to the queue
+				serverIP = msg.senderIP;
 				if (msg.type == req) {
 					fsm_onRequestButtonPress(msg.request.floor, msg.request.button);
 				}
@@ -70,6 +75,8 @@ int main(void){
         }
         
         usleep(inputPollRate_ms*1000);
+		
+		broadcastIP(elevator);
     }
 }
 

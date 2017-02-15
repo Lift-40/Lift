@@ -72,6 +72,9 @@ Message get_msg_from_queue (QueuedMsg *firstMsg){
 
 void receiveUDPMsg(const char * ip, char * data, int datalength){
     addIp(ip);
+    Message msg;
+    memcpy( &msg, data, datalength );
+    add_msg_to_queue(msg, lastMsg, firstMsg);
 }
 
 void receiveTCPMsg(const char * ip, char * data, int datalength){
@@ -147,11 +150,14 @@ bool connectionAvailable(char *ipAddress){
     return false;
 }
 
-void broadcastIP(){
-    char *iP = 0;
-    iP = getMyIpAddress(NETW_INTERFACE);
+void broadcastIP(senderRole role){
     int tcpPortNumber = 5540; // Should be in a config file
-    udp_broadcast( tcpPortNumber, iP, strlen(iP) ); // Try with sizeof()
+	Message msg;
+	msg.senderIP = getMyIP();
+	msg.role = role;
+    char data[sizeof( Message )];
+    memcpy( data, &msg, sizeof( Message ) );
+    udp_broadcast( tcpPortNumber, &data[0], sizeof( Message )); // Try with sizeof()
 }
 
 char * getmyIP() {

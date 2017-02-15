@@ -139,6 +139,7 @@ void removeElev(const char * ip){
 int server_init() {
 	initElevs();
     networkInit();
+	broadcastIP(server);
 }
 
 // TODO: Fill the available_elevators array with the ips of the working elevator
@@ -149,7 +150,8 @@ int server_routine() {
     // Call receive message
     msg = receiveMessage();
     if (msg != NULL) {
-		// if it's a request type then add it to the queue         
+		// if it's a request type then add it to the queue
+		
 		if (msg.type == req){
 	    	storeRequest(msg.request);
 		}
