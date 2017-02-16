@@ -1,3 +1,4 @@
+#pragma once
 #include <stdbool.h>
 #include "../elev_algo/elevator_io_types.h"
 #include "../elev_algo/elevator.h"
@@ -10,7 +11,7 @@ typedef struct {
 
 typedef enum { 
     server,
-	elevator
+	elev
 } senderRole;
 
 typedef enum { 
@@ -20,8 +21,8 @@ typedef enum {
 } msgType;
 
 typedef struct {
-    char * senderIP;
-	char * destinationIP;
+    char senderIP[32];
+	char destinationIP[32];
     msgType type;
     Request request; 
     Elevator elev_struct;
@@ -32,6 +33,6 @@ typedef struct {
 void sendMessage(Message msg);
 Message receiveMessage(void);
 bool connectionAvailable(char *ipAddress);
-void broadcastIP(void);
+void broadcastIP(senderRole role);
 void networkInit(void);
 char * getMyIP();

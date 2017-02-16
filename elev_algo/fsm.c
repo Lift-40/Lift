@@ -1,8 +1,7 @@
+#include <stdio.h>
+#include <string.h>
 
 #include "fsm.h"
-
-#include <stdio.h>
-
 #include "con_load.h"
 #include "elevator.h"
 #include "elevator_io_device.h"
@@ -13,6 +12,7 @@
 static Message msg;
 static Elevator             elevator;
 static ElevOutputDevice     outputDevice;
+extern char serverIP[32];
 
 static void __attribute__((constructor)) fsm_init(){
     elevator = elevator_uninitialized();
@@ -25,9 +25,11 @@ static void __attribute__((constructor)) fsm_init(){
         )
     )
 	
-	msg.senderIP = getMyIP();	
-	msg.destinationIP = serverIP;
-	msg.role = elevator;
+	strcpy(msg.senderIP, getMyIP());
+	// msg.senderIP = getMyIP();
+	strcpy(msg.destinationIP, serverIP);
+	// msg.destinationIP = serverIP;
+	msg.role = elev;
     
     outputDevice = elevio_getOutputDevice();
 }
@@ -77,14 +79,17 @@ void fsm_onRequestButtonPress(int btn_floor, Button btn_type){
         }
         break;
     }
+	
+	broadcastIP(elev);
     
     setAllLights(elevator);
     
     printf("\nNew state:\n");
     elevator_print(elevator);
-	msg.serverIP = serverIP;
+	strcpy(msg.destinationIP, serverIP);
+	//msg.destinationIP = serverIP;
 	msg.type = elev_state;
-	msg.request = (Request){btn_floor,btn_type};
+	msg.request = (Request){btn_floor,btn_type,false};
 	msg.elev_struct = elevator;
 	
 }
@@ -117,9 +122,12 @@ void fsm_onFloorArrival(int newFloor){
     
     printf("\nNew state:\n");
     elevator_print(elevator);
-	msg.serverIP = serverIP;
+	strcpy(msg.destinationIP, serverIP);
+	//msg.destinationIP = serverIP;
 	msg.type = elev_state;
-	msg.request = NULL;
+	Request emptyRequest;
+	emptyRequest.isEmpty = true;
+	msg.request = emptyRequest;
 	msg.elev_struct = elevator;
 	
 }
@@ -151,9 +159,12 @@ void fsm_onDoorTimeout(void){
     
     printf("\nNew state:\n");
     elevator_print(elevator);
-	msg.serverIP = serverIP;
+	strcpy(msg.destinationIP, serverIP);
+	// msg.destinationIP = serverIP;
 	msg.type = elev_state;
-	msg.request = NULL;
+	Request emptyRequest;
+	emptyRequest.isEmpty = true;
+	msg.request = emptyRequest;
 	msg.elev_struct = elevator;
 	
 }

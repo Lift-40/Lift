@@ -2,12 +2,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 
 #include "con_load.h"
 #include "elevator_io_device.h"
 #include "../network_driver/network_io.h"
 #include "fsm.h"
 #include "timer.h"
+
+char serverIP[32] = "";
 
 int main(void){
     printf("Started!\n");
@@ -18,13 +21,9 @@ int main(void){
     )
 	
 	networkInit();
-	
-	broadcastIP(elevator);
     
     ElevInputDevice input = elevio_getInputDevice();
-	
-	char serverIP[32] = 0;
-    
+	    
     if(input.floorSensor() == -1){
         fsm_onInitBetweenFloors();
     }
@@ -47,9 +46,9 @@ int main(void){
 			Message msg;
 			// Call receive message
 			msg = receiveMessage();
-			if (msg != NULL && msg.role == server) {
+			if (msg.isEmpty == false && msg.role == server) {
 				// if it's a request type then add it to the queue
-				serverIP = msg.senderIP;
+				strcpy(serverIP, msg.senderIP);
 				if (msg.type == req) {
 					fsm_onRequestButtonPress(msg.request.floor, msg.request.button);
 				}
@@ -75,8 +74,6 @@ int main(void){
         }
         
         usleep(inputPollRate_ms*1000);
-		
-		broadcastIP(elevator);
     }
 }
 

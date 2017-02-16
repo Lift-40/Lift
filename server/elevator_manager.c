@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 char available_elevators[MAX_ELEVATORS][32];
 
@@ -19,13 +20,14 @@ char findBestElev(Request request){
 
     Elevator elev_states[MAX_ELEVATORS];
 
-    char bestElevatorIP[32] = 0;
+    char bestElevatorIP[32] = "";
 
     for (int i = 0; i < MAX_ELEVATORS; i++) {
         Elevator elev_states[i] = readElevator(available_elevators[i]);
 		// If one elevator is currently idle in the requested floor, select that one    	
 		if (elev_states[i].behaviour == EB_Idle && elev_states[i].floor == floorOfReq){
-			bestElevatorIP = elev_states[i].ip;
+			strcpy(bestElevatorIP, elev_states[i].ip);
+			// bestElevatorIP = elev_states[i].ip;
 			stop = 1;
 		}
     }
@@ -62,9 +64,11 @@ char findBestElev(Request request){
 			 }
 		}
 		if (minFloorDiffMov <= minFloorDiffIdle) {
-			bestElevatorIP = elev_states[indexMov];
+			strcpy(bestElevatorIP, elev_states[indexMov].ip);
+			// bestElevatorIP = elev_states[indexMov].ip;
 		} else {
-			bestElevatorIP = elev_states[indexIdle];
+			strcpy(bestElevatorIP, elev_states[indexIdle].ip);
+			// bestElevatorIP = elev_states[indexIdle];
 		}
     }
     else if (stop == 0 && (pressedButton == B_HallUp || (floorOfReq == NUM_FLOORS-1 && pressedButton == B_HallDown))) {
@@ -92,9 +96,11 @@ char findBestElev(Request request){
 			}
         }
 		if (minFloorDiffMov <= minFloorDiffIdle) {
-            bestElevatorIP = elev_states[indexMov];
+			strcpy(bestElevatorIP, elev_states[indexMov].ip);
+            // bestElevatorIP = elev_states[indexMov];
         } else {
-	    	bestElevatorIP = elev_states[indexIdle];
+			strcpy(bestElevatorIP, elev_states[indexIdle].ip);
+	    	// bestElevatorIP = elev_states[indexIdle];
         }	
     }
 	return bestElevatorIP;
