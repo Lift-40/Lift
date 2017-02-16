@@ -149,7 +149,7 @@ int server_routine() {
     Message msg;
     // Call receive message
     msg = receiveMessage();
-    if (msg != NULL) {
+    if (msg.isEmpty == false) {
 		// if it's a request type then add it to the queue
 		addElev(msg.senderIP);
 		if (msg.type == req){
@@ -166,10 +166,10 @@ int server_routine() {
 
     Request firstReqInQueue;
     firstReqInQueue = getRequest();
-    if (firstReqInQueue != NULL) {
+    if (firstReqInQueue.isEmpty == false) {
 		char bestElevIP[32] = 0;
         bestElevIP = findBestElev(firstReqInQueue);
-		Message msg = {getMyIP(), bestElevIP, req, firstReqInQueue, NULL, server};
+		Message msg = {getMyIP(), bestElevIP, req, firstReqInQueue, NULL, server, false};
 		// Check if the connection with the best elevator is available
 		if (connectionAvailable(bestElevIP)){
 			// if so send message to the best elevator

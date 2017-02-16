@@ -33,10 +33,12 @@ void storeRequest(Request newReq){
 // has confirm that it has arrived
 Request getRequest(){
     if (firstReq == NULL) {
-        return NULL;
+        Message emptyMessage;
+		emptyMessage.isEmpty = true;
+        return emptyMessage;
     } else {
-	Request req = (*firstReq).req;
-	return req;
+		Request req = (*firstReq).req;
+		return req;
     }
 }
 

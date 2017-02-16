@@ -55,15 +55,14 @@ int add_msg_to_queue (Message newMsg, QueuedMsg *lastMsg, QueuedMsg *firstMsg){
 
 Message get_msg_from_queue (QueuedMsg *firstMsg){
     if (firstMsg == NULL) {
-        return NULL;
+		Message emptyMessage;
+		emptyMessage.isEmpty = true;
+        return emptyMessage;
     } else {
-        Message msg = (*firstMsg).msg;
-
         //QueuedMsg *secondMsg = (*firstMsg) -> nextMsg;
         //*firstMsg = secondMsg;
         firstMsg = (*firstMsg).nextMsg;
-    
-    	return msg;
+		return (*firstMsg).msg;
     }
 }
 
