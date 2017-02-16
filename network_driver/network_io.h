@@ -4,7 +4,8 @@
 
 typedef struct {
     int floor;
-    Button button; 
+    Button button;
+	bool isEmpty;
 } Request;
 
 typedef enum { 
@@ -25,6 +26,7 @@ typedef struct {
     Request request; 
     Elevator elev_struct;
 	senderRole role;
+    bool isEmpty;
 } Message;
 
 void sendMessage(Message msg);

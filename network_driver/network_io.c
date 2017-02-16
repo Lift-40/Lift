@@ -1,6 +1,6 @@
 #include "network_io.h"
 #include "../network_driver/sverresnetwork.h"
-#include "configuration.h"
+#include "../configuration.h"
 
 #include <string.h>
 #include <stdlib.h>
