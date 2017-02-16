@@ -152,7 +152,8 @@ bool connectionAvailable(char *ipAddress){
 void broadcastIP(senderRole role){
     int tcpPortNumber = 5540; // Should be in a config file
 	Message msg;
-	msg.senderIP = getMyIP();
+	strcpy(msg.senderIP, getMyIP());
+	// msg.senderIP = getMyIP();
 	msg.role = role;
     char data[sizeof( Message )];
     memcpy( data, &msg, sizeof( Message ) );
