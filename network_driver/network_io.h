@@ -22,11 +22,11 @@ typedef enum {
 
 typedef struct {
     char senderIP[32];
-	char destinationIP[32];
+    char destinationIP[32];
     msgType type;
     Request request; 
     Elevator elev_struct;
-	senderRole role;
+    senderRole role;
     bool isEmpty;
 } Message;
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "elevator_io_types.h"
+#include <stdbool.h>
 
 typedef enum {
     EB_Idle,
@@ -29,6 +30,7 @@ typedef struct {
         ClearRequestVariant clearRequestVariant;
         double              doorOpenDuration_s;
     } config;    
+	bool isEmpty;
 } Elevator;
 
 

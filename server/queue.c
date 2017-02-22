@@ -1,5 +1,6 @@
 #include "queue.h"
-#include "network_io.h"
+#include "../network_driver/network_io.h"#include <stdio.h>
+#include <stdlib.h>
 
 typedef struct Queued_Request QueuedReq;
 
@@ -33,9 +34,9 @@ void storeRequest(Request newReq){
 // has confirm that it has arrived
 Request getRequest(){
     if (firstReq == NULL) {
-        Message emptyMessage;
-		emptyMessage.isEmpty = true;
-        return emptyMessage;
+        Request emptyRequest;
+		emptyRequest.isEmpty = true;
+        return emptyRequest;
     } else {
 		Request req = (*firstReq).req;
 		return req;

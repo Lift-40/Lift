@@ -16,7 +16,7 @@ struct Queued_Message{
     //int          value;
 };
 
-#define NETW_INTERFACE "eth0"
+#define NETW_INTERFACE "lo"
 
 QueuedMsg *firstMsg;
 QueuedMsg *lastMsg;

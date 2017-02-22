@@ -1,6 +1,7 @@
 #include "elevator_manager.h"
-#include "elevator_io_types.h"
+#include "../elev_algo/elevator_io_types.h"
 #include "../network_driver/network_io.h"
+#include "elevator_storage.h"
 #include "queue.h"
 #include "../configuration.h"
 
@@ -12,7 +13,7 @@ char available_elevators[MAX_ELEVATORS][32];
 
 /*-----------------------------INTERNAL FUNCIONS---------------------------------*/
 
-char findBestElev(Request request){
+char * findBestElev(Request request){
     int floorOfReq = request.floor;
     Button pressedButton = request.button;
 
@@ -23,7 +24,7 @@ char findBestElev(Request request){
     char bestElevatorIP[32] = "";
 
     for (int i = 0; i < MAX_ELEVATORS; i++) {
-        Elevator elev_states[i] = readElevator(available_elevators[i]);
+        elev_states[i] = readElevator(available_elevators[i]);
 		// If one elevator is currently idle in the requested floor, select that one    	
 		if (elev_states[i].behaviour == EB_Idle && elev_states[i].floor == floorOfReq){
 			strcpy(bestElevatorIP, elev_states[i].ip);
@@ -173,9 +174,18 @@ int server_routine() {
     Request firstReqInQueue;
     firstReqInQueue = getRequest();
     if (firstReqInQueue.isEmpty == false) {
-		char bestElevIP[32] = 0;
-        bestElevIP = findBestElev(firstReqInQueue);
-		Message msg = {getMyIP(), bestElevIP, req, firstReqInQueue, NULL, server, false};
+		char bestElevIP[32] = "";
+        strcpy(bestElevIP, findBestElev(firstReqInQueue));
+		Elevator emptyElevator;
+		Message msg;
+		strcpy(msg.senderIP, getMyIP());
+		strcpy(msg.destinationIP, bestElevIP);
+		msg.type = req;
+		msg.request = firstReqInQueue;
+		msg.elev_struct = emptyElevator;
+		msg.role = server;
+		msg.isEmpty = false;
+		//Message msg = {getMyIP(), bestElevIP, req, firstReqInQueue, emptyElevator, server, false};
 		// Check if the connection with the best elevator is available
 		if (connectionAvailable(bestElevIP)){
 			// if so send message to the best elevator
