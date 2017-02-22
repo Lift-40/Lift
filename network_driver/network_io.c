@@ -160,7 +160,7 @@ void broadcastIP(senderRole role){
     udp_broadcast( tcpPortNumber, &data[0], sizeof( Message )); // Try with sizeof()
 }
 
-char * getmyIP() {
+char * getMyIP() {
 	return getMyIpAddress(NETW_INTERFACE);
 }
 
