@@ -34,5 +34,5 @@ void sendMessage(Message msg);
 Message receiveMessage(void);
 bool connectionAvailable(char *ipAddress);
 void broadcastIP(senderRole role);
-void networkInit(void);
+void networkInit(int port_Number, senderRole role);
 char * getMyIP();

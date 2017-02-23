@@ -26,6 +26,7 @@ static void __attribute__((constructor)) fsm_init(){
     )
 	
 	strcpy(msg.senderIP, getMyIP());
+	strcpy(elevator.ip, getMyIP());
 	// msg.senderIP = getMyIP();
 	strcpy(msg.destinationIP, serverIP);
 	// msg.destinationIP = serverIP;
@@ -83,7 +84,7 @@ void fsm_onRequestButtonPress(int btn_floor, Button btn_type){
 	broadcastIP(elev);
     
     setAllLights(elevator);
-    
+    strcpy(msg.destinationIP, serverIP);
     printf("\nNew state:\n");
     elevator_print(elevator);
 	strcpy(msg.destinationIP, serverIP);
@@ -91,7 +92,9 @@ void fsm_onRequestButtonPress(int btn_floor, Button btn_type){
 	msg.type = elev_state;
 	msg.request = (Request){btn_floor,btn_type,false};
 	msg.elev_struct = elevator;
-	
+	if (serverIP[0] != 0) {
+		sendMessage(msg);
+	}
 }
 
 
@@ -123,13 +126,16 @@ void fsm_onFloorArrival(int newFloor){
     printf("\nNew state:\n");
     elevator_print(elevator);
 	strcpy(msg.destinationIP, serverIP);
+	printf("Server IP: %s\n", serverIP);
 	//msg.destinationIP = serverIP;
 	msg.type = elev_state;
 	Request emptyRequest;
 	emptyRequest.isEmpty = true;
 	msg.request = emptyRequest;
 	msg.elev_struct = elevator;
-	
+	if (serverIP[0] != 0) {
+		sendMessage(msg);
+	}
 }
 
 
@@ -166,7 +172,9 @@ void fsm_onDoorTimeout(void){
 	emptyRequest.isEmpty = true;
 	msg.request = emptyRequest;
 	msg.elev_struct = elevator;
-	
+	if (serverIP[0] != 0) {
+		sendMessage(msg);
+	}
 }
 
 

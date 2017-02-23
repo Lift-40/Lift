@@ -1,6 +1,7 @@
 #include "queue.h"
 #include "../network_driver/network_io.h"#include <stdio.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 typedef struct Queued_Request QueuedReq;
 
@@ -13,20 +14,24 @@ QueuedReq *firstReq;
 QueuedReq *lastReq;
 
 void storeRequest(Request newReq){
+	printf("Received request: %d, %d",newReq.floor,newReq.button);
     QueuedReq *newQueuedReq;
 
-    if (( newQueuedReq = (QueuedReq *)malloc(sizeof(QueuedReq)) ) == NULL)
+    if (( newQueuedReq = (QueuedReq *)malloc(sizeof(QueuedReq)) ) == NULL) {
         return 0;
-    
-    (*lastReq).nextReq = newQueuedReq;
+	}
+	
     newQueuedReq -> nextReq = NULL;
     newQueuedReq -> req = newReq;
     
-    if (firstReq == NULL && lastReq == NULL) {
+	if (firstReq == NULL && lastReq == NULL) {
         firstReq = newQueuedReq;
-    }
-
-    lastReq = newQueuedReq;
+		lastReq = newQueuedReq;
+    } else {
+		printf("Stored request: %d, %d",newReq.floor,newReq.button);
+		(*lastReq).nextReq = newQueuedReq;
+		lastReq = newQueuedReq;
+	}
     return 1;
 }
 

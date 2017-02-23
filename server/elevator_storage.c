@@ -9,7 +9,7 @@
 Elevator elev_states[MAX_ELEVATORS];
 
 void initStates(){
-    for(int i = 0; i < MAX_ELEVATORS; i++){
+    for(int i = 0; i < MAX_ELEVATORS - 1; i++){
 		Elevator emptyElevator;
 		emptyElevator.isEmpty = true;
         elev_states[i] = emptyElevator;
@@ -18,23 +18,27 @@ void initStates(){
 
 void addState(Elevator elev_state){
     int exists = 0;
+	int stored = 0;
     char inputIP[32] = "";
+	printf("Attempting to add new elevator struct with IP %s\n",elev_state.ip);
 	strcpy(inputIP, elev_state.ip);
-    for(int i = 0; i < MAX_ELEVATORS; i++){
+    for(int i = 0; i < MAX_ELEVATORS - 1; i++){
+		printf("%d\n",i);
 		char storedIP[32] = "";
 		strcpy(storedIP, elev_states[i].ip);
         //char storedIP[32] = elev_states[i].ip;
-        if(strncmp( inputIP, storedIP, strlen(storedIP) ) == 0){
-	    printf("The elev_state %s already exists, updated it\n",elev_state.ip);
-	    exists = 1;
-        elev_states[i] = elev_state;
-	}
+        if(strcmp( inputIP, storedIP ) == 0){
+			printf("The elev_state %s already exists, updated it\n",elev_state.ip);
+			exists = 1;
+			elev_states[i] = elev_state;
+		}
     }
     if (exists == 0){
-    	for(int i = 0; i < MAX_ELEVATORS; i++){
-            if(elev_states[i].isEmpty){
+    	for(int i = 0; i < MAX_ELEVATORS - 1; i++){
+            if(elev_states[i].isEmpty && stored == 0){
                 printf("Adding new elevator struct with IP %s to index %d\n",elev_state.ip,i);
                 elev_states[i] = elev_state;
+				stored = 1;
             }
         }
     }
@@ -42,15 +46,14 @@ void addState(Elevator elev_state){
 
 Elevator getState(char * inputIP){
     int exists = 0;
-    for(int i = 0; i < MAX_ELEVATORS; i++){
+    for(int i = 0; i < MAX_ELEVATORS - 1; i++){
 		char storedIP[32] = "";
 		strcpy(storedIP, elev_states[i].ip);
-        //char storedIP[32] = elev_states[i].ip;
-        if(strncmp( inputIP, storedIP, strlen(storedIP) ) == 0){
-	    printf("The elev_state %s exists, returned it\n",elev_states[i].ip);
-	    exists = 1;
+        if(strcmp( inputIP, storedIP) == 0){
+	    	printf("The elev_state %s exists, returned it\n",elev_states[i].ip);
+	    	exists = 1;
             return elev_states[i];
-	}
+		}
     }
     if (exists == 0){
 		Elevator emptyElevator;
@@ -63,10 +66,10 @@ Elevator getState(char * inputIP){
 void removeState(Elevator elev_state){
     char inputIP[32] = "";
 	strcpy(inputIP, elev_state.ip);
-    for(int i = 0; i < MAX_ELEVATORS; i++){
+    for(int i = 0; i < MAX_ELEVATORS - 1; i++){
 		char storedIP[32] = "";
 		strcpy(storedIP, elev_states[i].ip);
-        if(strncmp( inputIP, storedIP, strlen(storedIP) ) == 0){
+        if(strcmp( inputIP, storedIP ) == 0){
             printf("Removing elevator struct with IP %s from index %d\n",elev_state.ip,i);
 			Elevator emptyElevator;
             elev_states[i] = emptyElevator;

@@ -108,32 +108,34 @@ char * findBestElev(Request request){
 }
 
 void initElevs(){
-    for(int i = 0; i < MAX_ELEVATORS; i++){
-        available_elevators[i][0] = 0;
+    for(int i = 0; i < MAX_ELEVATORS - 1; i++){
+        available_elevators[i][0] = '\0';
     }
 }
 
 void addElev(const char * ip){
     int exists = 0;
-    for(int i = 0; i < MAX_ELEVATORS; i++){
-        if(strncmp( ip, available_elevators[i], strlen(available_elevators[i]) ) == 0 && available_elevators[i][0] != 0 ){
+	int added = 0;
+    for(int i = 0; i < MAX_ELEVATORS - 1; i++){
+        if(strcmp( ip, available_elevators[i]) == 0){
 	    printf("The ip %s already exists in available_elevators\n",ip);
 	    exists = 1;
 	}
     }
     if (exists == 0){
-    	for(int i = 0; i < MAX_ELEVATORS; i++){
-            if(available_elevators[i][0] == 0){
+    	for(int i = 0; i < MAX_ELEVATORS - 1; i++){
+            if(available_elevators[i][0] == 0 && added == 0) {
                 printf("Adding elevator %s to index %d\n",ip,i);
-                strncpy( available_elevators[i], ip, 30 );
+                strcpy( available_elevators[i], ip);
+				added = 1;
             }
         }
     }
 }
 
 void removeElev(const char * ip){
-    for(int i = 0; i < MAX_ELEVATORS; i++){
-        if(strncmp( ip, available_elevators[i], strlen(available_elevators[i]) ) == 0 && available_elevators[i][0] != 0){
+    for(int i = 0; i < MAX_ELEVATORS - 1; i++){
+        if(strcmp( ip, available_elevators[i] ) == 0){
             printf("Removing elevator %s from available_elevators %d\n", ip, i);
             available_elevators[i][0] = 0;
             return;
@@ -145,7 +147,7 @@ void removeElev(const char * ip){
 
 int server_init() {
 	initElevs();
-    networkInit();
+    networkInit(4041, server);
 	broadcastIP(server);
 }
 
@@ -157,6 +159,7 @@ int server_routine() {
     // Call receive message
     msg = receiveMessage();
     if (msg.isEmpty == false) {
+		printf("Received new message, type is %d", msg.type);
 		// if it's a request type then add it to the queue
 		addElev(msg.senderIP);
 		if (msg.type == req){

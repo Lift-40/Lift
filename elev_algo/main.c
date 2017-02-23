@@ -12,16 +12,21 @@
 
 char serverIP[32] = "";
 
-int main(void){
+int main(int argc, char *argv[]){
     printf("Started!\n");
     
     int inputPollRate_ms = 25;
     con_load("elevator.con",
         con_val("inputPollRate_ms", &inputPollRate_ms, "%d")
     )
+		
+	if (argc != 2){
+		printf("Port number not defined or invalid.");
+		exit(1);
+	}
 	
-	networkInit();
-    
+	networkInit(atoi(argv[1]), elev);
+	
     ElevInputDevice input = elevio_getInputDevice();
 	    
     if(input.floorSensor() == -1){
@@ -48,11 +53,13 @@ int main(void){
 			msg = receiveMessage();
 			if (msg.isEmpty == false && msg.role == server) {
 				// if it's a request type then add it to the queue
+				printf("Message received\n");
 				strcpy(serverIP, msg.senderIP);
+				printf("Server IP updated to %s\n", msg.senderIP);
 				if (msg.type == req) {
 					fsm_onRequestButtonPress(msg.request.floor, msg.request.button);
 				}
-				// The light message type needs to be handled here
+				// TODO: The light message type needs to be handled here
 			}	
 		}
         
