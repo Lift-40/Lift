@@ -27,7 +27,11 @@ char * findBestElev(Request request){
 
     for (int i = 0; i < MAX_ELEVATORS; i++) {
 		if (available_elevators[i][0] != 0) {
-			elev_states[i] = readElevator(available_elevators[i]);
+			Elevator data;
+			data = readElevator(available_elevators[i]);
+			printf("Read elevator\n");
+			memcpy( &elev_states[i], &data, sizeof(Elevator) );
+			printf("Copied elevator\n");
 		} 
 		// If one elevator is currently idle in the requested floor, select that one    	
 		if (!elev_states[i].isEmpty && elev_states[i].behaviour == EB_Idle && elev_states[i].floor == floorOfReq){
@@ -37,7 +41,7 @@ char * findBestElev(Request request){
 		}
     }
 	
-	printf("Available elevator states stored");
+	printf("Available elevator states stored\n");
 
     int minFloorDiffIdle = INF;
     int minFloorDiffMov = INF;
@@ -47,6 +51,7 @@ char * findBestElev(Request request){
     int indexMov = 0;
 	
     if (stop == 0 && (pressedButton == B_HallDown || (floorOfReq == 0 && pressedButton == B_HallUp))) {
+		printf("Didnt stop, pressedButton: Down or floor = 0 && pressedButton: Up\n");
 
 		for (int i = 0; i < MAX_ELEVATORS; i++) {
 			if (!elev_states[i].isEmpty && elev_states[i].behaviour == EB_Idle) {
@@ -79,7 +84,7 @@ char * findBestElev(Request request){
 		}
     }
     else if (stop == 0 && (pressedButton == B_HallUp || (floorOfReq == NUM_FLOORS-1 && pressedButton == B_HallDown))) {
-
+		printf("Didnt stop, pressedButton: Up or floor = 3 && pressedButton: Down\n");
     	for (int i = 0; i < MAX_ELEVATORS; i++) {
 			if (!elev_states[i].isEmpty && elev_states[i].behaviour == EB_Idle) {
 
@@ -110,7 +115,12 @@ char * findBestElev(Request request){
 	    	// bestElevatorIP = elev_states[indexIdle];
         }	
     }
-	return bestElevatorIP;
+	if((indexMov == 0) && (indexIdle == 0)) {
+		bestElevatorIP[0] = 0;
+	}
+	char * buf = malloc(sizeof(char)*32);
+	sprintf(buf, "%s", bestElevatorIP);
+	return buf;
 }
 
 void initElevs(){
@@ -177,8 +187,22 @@ int server_routine() {
 		else if (msg.type == elev_state) {
 			printf("Message type is elev_state, adding to storage\n");
 			storeElevator(msg.elev_struct);
-	    	// TODO:if state type, check if current first order of the queue is in the elevator's queue 
-	    	// if it is, remove order from server queue
+	    				
+			// Get first request in server queue
+			Request firstReqInQueue;
+			firstReqInQueue = getRequest();
+			
+			printf("Getting first request from server queue\n");
+			
+			int floor = firstReqInQueue.floor;
+			int button = firstReqInQueue.button;
+			
+			// Find that order in the elevator's queue and remove it in the server queue
+			if(msg.elev_struct.requests[floor][button] == 1){
+				printf("removing first request from server queue\n");
+				removeRequest();
+			}
+
     	}
 		// There's no need to handle the light type since those orders will only be sent to the elevators
 	}
@@ -201,7 +225,7 @@ int server_routine() {
 		msg.isEmpty = false;
 		//Message msg = {getMyIP(), bestElevIP, req, firstReqInQueue, emptyElevator, server, false};
 		// Check if the connection with the best elevator is available
-		if (connectionAvailable(bestElevIP)){
+		if (connectionAvailable(bestElevIP) && bestElevIP[0] != 0){
 			// if so send message to the best elevator
 			printf("Request sent to best elevator with IP %s\n", bestElevIP);
 			sendMessage(msg);
@@ -210,4 +234,5 @@ int server_routine() {
 			removeElev(bestElevIP);
 		}
     }
+	sleep(2);
 }

@@ -4,6 +4,8 @@
 #include <unistd.h>
 #include <string.h>
 
+#include "../configuration.h"
+
 #include "con_load.h"
 #include "elevator_io_device.h"
 #include "../network_driver/network_io.h"
@@ -56,7 +58,7 @@ int main(int argc, char *argv[]){
 				printf("Message received\n");
 				strcpy(serverIP, msg.senderIP);
 				printf("Server IP updated to %s\n", msg.senderIP);
-				if (msg.type == req) {
+				if (msg.type == req && msg.request.floor < NUM_FLOORS+1 && msg.request.button < 3) {
 					fsm_onRequestButtonPress(msg.request.floor, msg.request.button);
 				}
 				// TODO: The light message type needs to be handled here
