@@ -14,7 +14,7 @@ QueuedReq *firstReq;
 QueuedReq *lastReq;
 
 void storeRequest(Request newReq){
-	printf("Received request: %d, %d",newReq.floor,newReq.button);
+	printf("Received request: %d, %d\n",newReq.floor,newReq.button);
     QueuedReq *newQueuedReq;
 
     if (( newQueuedReq = (QueuedReq *)malloc(sizeof(QueuedReq)) ) == NULL) {
@@ -24,7 +24,7 @@ void storeRequest(Request newReq){
     newQueuedReq -> nextReq = NULL;
     newQueuedReq -> req = newReq;
     
-	if (firstReq == NULL && lastReq == NULL) {
+	if (firstReq == NULL) {
         firstReq = newQueuedReq;
 		lastReq = newQueuedReq;
     } else {

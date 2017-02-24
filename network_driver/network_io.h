@@ -35,4 +35,6 @@ Message receiveMessage(void);
 bool connectionAvailable(char *ipAddress);
 void broadcastIP(senderRole role);
 void networkInit(int port_Number, senderRole role);
+void printReq(Request req);
 char * getMyIP();
+void printMessage(Message msg);

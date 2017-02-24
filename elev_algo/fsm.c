@@ -31,6 +31,7 @@ static void __attribute__((constructor)) fsm_init(){
 	strcpy(msg.destinationIP, serverIP);
 	// msg.destinationIP = serverIP;
 	msg.role = elev;
+	msg.isEmpty = false;
     
     outputDevice = elevio_getOutputDevice();
 }
@@ -44,9 +45,21 @@ static void setAllLights(Elevator es){
 }
 
 void fsm_onInitBetweenFloors(void){
-    outputDevice.motorDirection(D_Down);
-    elevator.dirn = D_Down;
-    elevator.behaviour = EB_Moving;
+	outputDevice.motorDirection(D_Down);
+	elevator.dirn = D_Down;
+	elevator.behaviour = EB_Moving;
+	strcpy(msg.destinationIP, serverIP);
+	//msg.destinationIP = serverIP;
+	msg.type = elev_state;
+	Request emptyRequest;
+	emptyRequest.isEmpty = true;
+	msg.request = emptyRequest;
+	msg.elev_struct = elevator;
+	if (serverIP[0] != 0) {
+		printf("Sending elevetor structure to the server, onInitBetweenFloors\n");
+		sendMessage(msg);
+		printf("Done\n");
+	}
 }
 
 void fsm_onRequestButtonPress(int btn_floor, Button btn_type){
@@ -89,11 +102,17 @@ void fsm_onRequestButtonPress(int btn_floor, Button btn_type){
     elevator_print(elevator);
 	strcpy(msg.destinationIP, serverIP);
 	//msg.destinationIP = serverIP;
-	msg.type = elev_state;
-	msg.request = (Request){btn_floor,btn_type,false};
+	msg.type = req;
+	Request request;
+	request.floor = btn_floor;
+	request.button = btn_type;
+	request.isEmpty = false;
+	msg.request = request;
 	msg.elev_struct = elevator;
 	if (serverIP[0] != 0) {
+		printf("Sending elevetor structure to the server, OnReqButtonPress\n");
 		sendMessage(msg);
+		printf("Done\n");
 	}
 }
 
@@ -134,7 +153,9 @@ void fsm_onFloorArrival(int newFloor){
 	msg.request = emptyRequest;
 	msg.elev_struct = elevator;
 	if (serverIP[0] != 0) {
+		printf("Sending elevetor structure to the server, onFloorArrival\n");
 		sendMessage(msg);
+		printf("Done\n");
 	}
 }
 
@@ -173,7 +194,9 @@ void fsm_onDoorTimeout(void){
 	msg.request = emptyRequest;
 	msg.elev_struct = elevator;
 	if (serverIP[0] != 0) {
+		printf("Sending elevetor structure to the server, onDoorTimeout\n");
 		sendMessage(msg);
+		printf("Done\n");
 	}
 }
 

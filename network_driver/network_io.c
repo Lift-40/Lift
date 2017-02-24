@@ -1,6 +1,7 @@
 #include "network_io.h"
 #include "../network_driver/sverresnetwork.h"
 #include "../configuration.h"
+#include "../elev_algo/elevator.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -47,7 +48,7 @@ int add_msg_to_queue (Message newMsg){
 	
 	printf("addMsg: firstMsg: %02x\n", firstMsg);
 	
-    if (firstMsg == NULL && lastMsg == NULL) {
+    if (firstMsg == NULL) {
 		printf("Queue is empty, initialized\n");
 		firstMsg = newQueuedMsg;
 		lastMsg = newQueuedMsg;
@@ -85,31 +86,34 @@ void receiveUDPMsg(const char * ip, char * data, int datalength){
     addIp(ip);
 	printf("IP added successfully\n");
     Message msg;
-    memcpy( &msg, data, datalength );
+    memcpy( &msg, data, sizeof(Message) );
 	printf("UDP message copied to memory\n");
+	printMsg(msg);
     add_msg_to_queue(msg);
 	printf("UDP message added to queue successfully\n");
 }
 
 void receiveTCPMsg(const char * ip, char * data, int datalength){
 	printf("New TCP message received\n");
+	printf("Datalength: %d", datalength);
     Message msg;
-    memcpy( &msg, data, datalength );
+    memcpy( &msg, data, sizeof(Message) );
 	printf("TCP message copied to memory\n");
+	printMsg(msg);
     add_msg_to_queue(msg);
 	printf("TCP message added to queue successfully\n");
 }
 
 
 void initIps(){
-    for(int i = 0; i < MAX_ELEVATORS - 1; i++){
+    for(int i = 0; i < MAX_ELEVATORS; i++){
         ips[i][0] = '\0';
     }
 }
 
 void addIp(const char * ip){
     int exists = 0;
-    for(int i = 0; i < MAX_ELEVATORS - 1; i++){
+    for(int i = 0; i < MAX_ELEVATORS; i++){
         if(strcmp( ip, ips[i]) == 0){
 			printf("The ip %s already exists\n",ip);
 			exists = 1;
@@ -117,7 +121,7 @@ void addIp(const char * ip){
     }
     if (exists == 0){
 		int added = 0;
-    	for(int i = 0; i < MAX_ELEVATORS - 1; i++){
+    	for(int i = 0; i < MAX_ELEVATORS; i++){
             if(ips[i][0] == '\0' && added == 0){
                 printf("Adding connection %s to index %d\n",ip,i);
                 strcpy( ips[i], ip);
@@ -128,7 +132,7 @@ void addIp(const char * ip){
 }
 
 void removeIp(const char * ip){
-    for(int i = 0; i < MAX_ELEVATORS - 1; i++){
+    for(int i = 0; i < MAX_ELEVATORS; i++){
         if(strcmp( ip, ips[i]) == 0){
             printf("Removing connection %s from index %d\n",ip,i);
             ips[i][0] = '\0';
@@ -156,9 +160,50 @@ void sendMessage(Message msg){
 	if (!connectionAvailable(msg.destinationIP)) {
 		tcp_openConnection(msg.destinationIP,4044);
 	}
-    char data[sizeof( Message )];
+	
+    char data[ sizeof(Message) ];
+	
+	printf("message size: %d\n", sizeof(Message));
     memcpy( data, &msg, sizeof( Message ) );
-    tcp_send(msg.destinationIP, &data[0], sizeof( Message ));
+	printf("memcpy data: %s\n", data);
+    tcp_send(msg.destinationIP, &data, sizeof( Message ));
+    Message sentmsg;
+    memcpy( &sentmsg, data, sizeof(Message) );
+	printMsg(msg);
+	printMsg(sentmsg);
+}
+
+void printMsg(Message msg){
+	printf("\nPrinting message %02x\n", msg);
+	printf("Sender IP: %s\n", msg.senderIP);
+	printf("Destination IP: %s\n", msg.destinationIP);
+	printf("Message type: ");
+	if (msg.type == req) {
+		printf("req\n");
+		printReq(msg.request);
+	} else if (msg.type == elev_state) {
+		printf("elev_state\n");
+	} else if (msg.type == light_update) {
+		printf("light_update\n");
+	} else {
+		printf("Invalid type\n");
+	}
+    //elevator_print(msg.elev_struct);
+    //senderRole role;
+	if(msg.isEmpty) {
+		printf("Message.isEmpty: true");
+	} else if (!msg.isEmpty) {
+		printf("Message.isEmpty: false");
+	} else {
+		printf("Message.isEmpty: Invalid");
+	}
+	printf("\n");
+}
+
+void printReq(Request req) {
+	printf("\nPrinting request %02x\n", req);
+	printf("Floor: %d\n", req.floor);
+	printf("Button type: %02x\n", req.button);
 }
 
 // ip of the elevator that sent the message
@@ -167,7 +212,7 @@ Message receiveMessage(){
 }
 
 bool connectionAvailable(char *ipAddress){
-    for(int i = 0; i < MAX_ELEVATORS - 1; ++i) {
+    for(int i = 0; i < MAX_ELEVATORS; ++i) {
         if (strcmp(ips[i], ipAddress) == 0) {
 	    return true;
 		}
