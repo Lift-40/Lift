@@ -1,5 +1,7 @@
 #include "queue.h"
 #include "../network_driver/network_io.h"#include <stdio.h>
+#include "../configuration.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -14,7 +16,7 @@ QueuedReq *firstReq;
 QueuedReq *lastReq;
 
 void storeRequest(Request newReq){
-	printf("Received request: %d, %d\n",newReq.floor,newReq.button);
+	printf("(queue.c)Received request in server: %d, %d\n",newReq.floor,newReq.button);
     QueuedReq *newQueuedReq;
 
     if (( newQueuedReq = (QueuedReq *)malloc(sizeof(QueuedReq)) ) == NULL) {
@@ -28,7 +30,7 @@ void storeRequest(Request newReq){
         firstReq = newQueuedReq;
 		lastReq = newQueuedReq;
     } else {
-		printf("Stored request: %d, %d",newReq.floor,newReq.button);
+		//printf("Stored request: %d, %d",newReq.floor,newReq.button);
 		(*lastReq).nextReq = newQueuedReq;
 		lastReq = newQueuedReq;
 	}
@@ -40,6 +42,7 @@ void storeRequest(Request newReq){
 Request getRequest(){
     if (firstReq == NULL) {
         Request emptyRequest;
+		emptyRequest.floor = NUM_FLOORS + 1;
 		emptyRequest.isEmpty = true;
         return emptyRequest;
     } else {

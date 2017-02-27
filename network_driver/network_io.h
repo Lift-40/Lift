@@ -17,7 +17,8 @@ typedef enum {
 typedef enum { 
     req,
     elev_state,
-    light_update
+    light_update,
+	broadcast
 } msgType;
 
 typedef struct {

@@ -41,35 +41,36 @@ int add_msg_to_queue (Message newMsg){
     if (( newQueuedMsg = (QueuedMsg *)malloc(sizeof(QueuedMsg)) ) == NULL) {
         return 0;
 	}
-	printf("Allocated memory for new message\n");
+	//printf("Allocated memory for new message\n");
 	
 	newQueuedMsg -> nextMsg = NULL;
 	newQueuedMsg -> msg = newMsg;
 	
-	printf("addMsg: firstMsg: %02x\n", firstMsg);
+	//printf("addMsg: first message in queue: %02x\n", firstMsg);
 	
     if (firstMsg == NULL) {
-		printf("Queue is empty, initialized\n");
+		printf("(network_io.c)Queue is empty, initialized\n");
 		firstMsg = newQueuedMsg;
 		lastMsg = newQueuedMsg;
-		printf("addMsg: firstMsg: %02x\n", firstMsg);
+		printf("(network_io.c)Adding first message: %02x\n", firstMsg);
     }else{
-		printf("Adding message to queue\n");
 		// Make the old 'lastAction' point to the new Action, and the new Action to point to NULL
 		(*lastMsg).nextMsg = newQueuedMsg;
 		// Designate the new Action as the new lastAction:
     	lastMsg = newQueuedMsg;
+		printf("(network_io.c)Adding message to the end of the queue\n");
 	}    
     return 1;
 }
 
 Message get_msg_from_queue(){
     if (firstMsg == NULL) {
+		//printf("(network_io.c)There is no message in the queue\n");
 		Message emptyMessage;
 		emptyMessage.isEmpty = true;
         return emptyMessage;
     } else {
-		printf("Getting first msg");
+		printf("(network_io.c)Getting first message\n");
         //QueuedMsg *secondMsg = (*firstMsg) -> nextMsg;
         //*firstMsg = secondMsg;
 		QueuedMsg *prevMsg = firstMsg;
@@ -82,26 +83,30 @@ Message get_msg_from_queue(){
 // typedef void (*TTcpConnectionCallback)(const char * ip, int created);
 
 void receiveUDPMsg(const char * ip, char * data, int datalength){
-	printf("New UDP message received\n");
-    addIp(ip);
-	printf("IP added successfully\n");
+	printf("\n(network_io.c)New UDP message received\n\n");
+	//printf("IP added successfully\n");
+	//data = (char *)&Message;
     Message msg;
+	//data = (char *)&msg;
     memcpy( &msg, data, sizeof(Message) );
-	printf("UDP message copied to memory\n");
+	//printf("UDP message copied to memory\n");
 	printMsg(msg);
     add_msg_to_queue(msg);
-	printf("UDP message added to queue successfully\n");
+	addIp(msg.senderIP);
+	//printf("UDP message added to queue successfully\n");
 }
 
 void receiveTCPMsg(const char * ip, char * data, int datalength){
-	printf("New TCP message received\n");
-	printf("Datalength: %d", datalength);
+	printf("\n(network_io.c)New TCP message received\n\n");
+	//printf("Datalength: %d", datalength);
+	//data = (char *)&Message;
     Message msg;
+	//data = (char *)&msg;
     memcpy( &msg, data, sizeof(Message) );
-	printf("TCP message copied to memory\n");
+	//printf("TCP message copied to memory\n");
 	printMsg(msg);
     add_msg_to_queue(msg);
-	printf("TCP message added to queue successfully\n");
+	//printf("TCP message added to queue successfully\n");
 }
 
 
@@ -115,7 +120,7 @@ void addIp(const char * ip){
     int exists = 0;
     for(int i = 0; i < MAX_ELEVATORS; i++){
         if(strcmp( ip, ips[i]) == 0){
-			printf("The ip %s already exists\n",ip);
+			printf("(network_io.c)The ip %s of an elevator already exists\n",ip);
 			exists = 1;
 		}
     }
@@ -123,7 +128,7 @@ void addIp(const char * ip){
 		int added = 0;
     	for(int i = 0; i < MAX_ELEVATORS; i++){
             if(ips[i][0] == '\0' && added == 0){
-                printf("Adding connection %s to index %d\n",ip,i);
+                printf("(network_io.c)Adding connection with elevator %s to index %d\n",ip,i);
                 strcpy( ips[i], ip);
 				added = 1;
             }
@@ -134,7 +139,7 @@ void addIp(const char * ip){
 void removeIp(const char * ip){
     for(int i = 0; i < MAX_ELEVATORS; i++){
         if(strcmp( ip, ips[i]) == 0){
-            printf("Removing connection %s from index %d\n",ip,i);
+            printf("(network_io.c)Removing connection with elevator %s from index %d\n",ip,i);
             ips[i][0] = '\0';
         }
     }
@@ -156,28 +161,39 @@ void tcpConnectionCallback(const char * ip, int created){
 /*-----------------------------EXTERNAL FUNCIONS---------------------------------*/
 
 void sendMessage(Message msg){
-	printf("Attempting to send message to %s\n", msg.destinationIP);
+	int tcpPortNumber;
+	if (msg.role == server){
+		printf("(network_io.c)Attempting to send message to elevator with IP: %s\n", msg.destinationIP);
+		tcpPortNumber = 4043;
+	} else if (msg.role == elev){
+		printf("(network_io.c)Attempting to send message to server with IP: %s\n", msg.destinationIP);
+		tcpPortNumber = 4044;
+	}
+
+	printf("(network_io.c)connectionAvailable(msg.destinationIP): %i\n", connectionAvailable(msg.destinationIP));
 	if (!connectionAvailable(msg.destinationIP)) {
-		tcp_openConnection(msg.destinationIP,4044);
+		tcp_openConnection(msg.destinationIP,tcpPortNumber);
 	}
 	
     char data[ sizeof(Message) ];
 	
-	printf("message size: %d\n", sizeof(Message));
+	//printf("message size: %d\n", sizeof(Message));
     memcpy( data, &msg, sizeof( Message ) );
-	printf("memcpy data: %s\n", data);
+	//printf("memcpy data: %s\n", data);
     tcp_send(msg.destinationIP, &data, sizeof( Message ));
     Message sentmsg;
     memcpy( &sentmsg, data, sizeof(Message) );
+	printf("(network_io.c)Message that arrives\n");
 	printMsg(msg);
+	printf("(network_io.c)Message that is sent\n");
 	printMsg(sentmsg);
 }
 
 void printMsg(Message msg){
-	printf("\nPrinting message %02x\n", msg);
-	printf("Sender IP: %s\n", msg.senderIP);
-	printf("Destination IP: %s\n", msg.destinationIP);
-	printf("Message type: ");
+	//printf("\nPrinting message %02x\n", msg);
+	printf("(network_io.c)Sender IP: %s\n", msg.senderIP);
+	printf("(network_io.c)Destination IP: %s\n", msg.destinationIP);
+	printf("(network_io.c)Message type: ");
 	if (msg.type == req) {
 		printf("req\n");
 		printReq(msg.request);
@@ -185,25 +201,27 @@ void printMsg(Message msg){
 		printf("elev_state\n");
 	} else if (msg.type == light_update) {
 		printf("light_update\n");
+	} else if (msg.type == broadcast) {
+		printf("broadcast\n");
 	} else {
 		printf("Invalid type\n");
 	}
     //elevator_print(msg.elev_struct);
     //senderRole role;
 	if(msg.isEmpty) {
-		printf("Message.isEmpty: true");
+		printf("(network_io.c)Message.isEmpty: true\n");
 	} else if (!msg.isEmpty) {
-		printf("Message.isEmpty: false");
+		printf("(network_io.c)Message.isEmpty: false\n");
 	} else {
-		printf("Message.isEmpty: Invalid");
+		printf("(network_io.c)Message.isEmpty: Invalid\n");
 	}
 	printf("\n");
 }
 
 void printReq(Request req) {
-	printf("\nPrinting request %02x\n", req);
-	printf("Floor: %d\n", req.floor);
-	printf("Button type: %02x\n", req.button);
+	printf("\n(network_io.c)Printing request %02x\n", req);
+	printf("(network_io.c)Floor: %d\n", req.floor);
+	printf("(network_io.c)Button type: %02x\n", req.button);
 }
 
 // ip of the elevator that sent the message
@@ -212,11 +230,13 @@ Message receiveMessage(){
 }
 
 bool connectionAvailable(char *ipAddress){
-    for(int i = 0; i < MAX_ELEVATORS; ++i) {
-        if (strcmp(ips[i], ipAddress) == 0) {
-	    return true;
+	if (ipAddress[0] != 0) {
+		for(int i = 0; i < MAX_ELEVATORS; i++) {
+			if (strcmp(ips[i], ipAddress) == 0) {
+				return true;
+			}
 		}
-    }
+	}
     return false;
 }
 
@@ -231,15 +251,16 @@ void broadcastIP(senderRole role){
 	strcpy(msg.senderIP, getMyIP());
 	// msg.senderIP = getMyIP();
 	msg.role = role;
+	msg.type = broadcast;
 	msg.isEmpty = false;
-	printf("msg.senderIP: %s\n", msg.senderIP);
+	printf("(network_io.c)Broadcasting IP, msg.senderIP: %s\n", msg.senderIP);
     char data[sizeof( Message )];
     memcpy( data, &msg, sizeof( Message ) );
     udp_broadcast( tcpPortNumber, &data[0], sizeof( Message )); // Try with sizeof()
 }
 
 char * getMyIP() {
-	printf("My IP address is: %s\n", getMyIpAddress(NETW_INTERFACE));
+	printf("(network_io.c)My IP address is: %s\n", getMyIpAddress(NETW_INTERFACE));
 	return getMyIpAddress(NETW_INTERFACE);
 }
 

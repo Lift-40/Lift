@@ -42,7 +42,7 @@ int main(int argc, char *argv[]){
                 for(int b = 0; b < N_BUTTONS; b++){
                     int v = input.requestButton(f, b);
                     if(v  &&  v != prev[f][b]){
-                        fsm_onRequestButtonPress(f, b);
+                        fsm_onRequestButtonPress(f, b, false);
                     }
                     prev[f][b] = v;
                 }
@@ -55,11 +55,11 @@ int main(int argc, char *argv[]){
 			msg = receiveMessage();
 			if (msg.isEmpty == false && msg.role == server) {
 				// if it's a request type then add it to the queue
-				printf("Message received\n");
+				printf("Message received by the elevator\n");
 				strcpy(serverIP, msg.senderIP);
 				printf("Server IP updated to %s\n", msg.senderIP);
 				if (msg.type == req && msg.request.floor < NUM_FLOORS+1 && msg.request.button < 3) {
-					fsm_onRequestButtonPress(msg.request.floor, msg.request.button);
+					fsm_onRequestButtonPress(msg.request.floor, msg.request.button, true);
 				}
 				// TODO: The light message type needs to be handled here
 			}	
