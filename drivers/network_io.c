@@ -1,7 +1,7 @@
 #include "network_io.h"
 #include "../drivers/sverresnetwork.h"
 #include "../configuration.h"
-#include "../elev_algo/elevator.h"
+#include "../elevator/elevator.h"
 
 #include <string.h>
 #include <stdlib.h>
