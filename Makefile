@@ -48,7 +48,7 @@ $(CLIENTOBJDIR)/%.o: elev_algo/%.c
 	@mkdir -p $(@D)
 	$(CC) -o $@ -c $(CFLAGS) $<
 
-$(DRIVEROBJDIR)/%.o: network_driver/%.c
+$(DRIVEROBJDIR)/%.o: drivers/%.c
 	@mkdir -p $(@D)
 	$(CC) -o $@ -c $(CFLAGS) $< -pthread
     

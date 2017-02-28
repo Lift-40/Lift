@@ -1,3 +1,6 @@
+#include "../elevator/elevator.h"
+#include "queue.h"
+
 typedef struct {
 	Elevator elev_states[MAX_ELEVATORS];
     Queued_Request queue[100000];

@@ -1,4 +1,4 @@
-#include "../elev_algo/elevator.h"
+#include "../elevator/elevator.h"
 
 void storeElevator(Elevator elev);
 Elevator readElevator(char *ip);

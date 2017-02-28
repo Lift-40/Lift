@@ -1,5 +1,5 @@
 #include "elevator_manager.h"
-#include "../elev_algo/elevator_io_types.h"
+#include "../elevator/elevator_io_types.h"
 #include "../drivers/network_io.h"
 #include "elevator_storage.h"
 #include "queue.h"

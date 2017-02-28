@@ -1,7 +1,7 @@
 #include "elevator_storage.h"
 #include "../configuration.h"
-#include "../elev_algo/elevator.h"
-#include "../elev_algo/elevator_io_types.h"
+#include "../elevator/elevator.h"
+#include "../elevator/elevator_io_types.h"
 #include "../drivers/network_io.h"
 #include <string.h>
 #include <stdio.h>
