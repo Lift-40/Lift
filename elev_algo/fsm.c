@@ -8,7 +8,7 @@
 #include "elevator_io_device.h"
 #include "requests.h"
 #include "timer.h"
-#include "../network_driver/network_io.h"
+#include "../drivers/network_io.h"
 #include "../configuration.h"
 
 static Message msg;

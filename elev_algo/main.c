@@ -8,7 +8,7 @@
 
 #include "con_load.h"
 #include "elevator_io_device.h"
-#include "../network_driver/network_io.h"
+#include "../drivers/network_io.h"
 #include "fsm.h"
 #include "timer.h"
 

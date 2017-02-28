@@ -2,7 +2,7 @@
 #include "../configuration.h"
 #include "../elev_algo/elevator.h"
 #include "../elev_algo/elevator_io_types.h"
-#include "../network_driver/network_io.h"
+#include "../drivers/network_io.h"
 #include <string.h>
 #include <stdio.h>
 

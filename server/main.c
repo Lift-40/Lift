@@ -1,6 +1,6 @@
 #include "elevator_manager.h"
 #include "../configuration.h"
-#include "../network_driver/network_io.h"
+#include "../drivers/network_io.h"
 #include <time.h>
 
 int main() {
