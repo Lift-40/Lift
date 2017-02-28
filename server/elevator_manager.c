@@ -11,6 +11,7 @@
 
 char available_elevators[MAX_ELEVATORS][32];
 char lastBestElevatorIP[32];
+Server serverState;
 
 /*-----------------------------INTERNAL FUNCIONS---------------------------------*/
 
@@ -165,11 +166,38 @@ void removeElev(const char * ip){
     }
 }
 
+void updateServerStruct() {	
+	QueueArray tmp;
+	
+	tmp = get_Requests_Array();
+	
+	serverState.queueLength = tmp.length;
+	
+	memcpy(serverState.queue, tmp.queue, tmp.length);
+	
+	// store elevator state backups
+	for(int i = 0; i < MAX_ELEVATORS; i++) {
+		serverState.elev_states[i] = readElevatorByIndex(i);
+	}
+}
+
 /*-----------------------------EXTERNAL FUNCIONS---------------------------------*/
 
 int server_init() {
 	initElevs();
-	initStates();
+	initStates();	
+	Server *loadedBackup = malloc(sizeof(Server));
+	loadedBackup = loadServerBackup();
+	if (isValidServer(loadedBackup)) {
+		// restore queue backup
+		for(int i = 0; i < loadedBackup -> queueLength; i++) {
+			storeRequest(loadedBackup -> queue[i]);
+		}
+		// restore elevator state backups
+		for(int i = 0; i < MAX_ELEVATORS; i++) {
+			storeElevator(loadedBackup -> elev_states[i]);
+		}
+	}
     networkInit(4041, server);
 	broadcastIP(server);
 }
@@ -177,6 +205,7 @@ int server_init() {
 // TODO: Fill the available_elevators array with the ips of the working elevator
 
 int server_routine() {	
+	updateServerStruct();
     /* code goes here */
     Message msg;
     // Call receive message
@@ -188,11 +217,13 @@ int server_routine() {
 		if (msg.type == req){
 			printf("(elevator_manager.c)Message type is request, adding to server queue\n");
 	    	storeRequest(msg.request);
+			writeServerBackup(&serverState);
 		}
 		// else if it's a state type then add it to the storage module
 		else if (msg.type == elev_state) {
 			printf("(elevator_manager.c)Message type is elev_state, adding to server storage\n");
 			storeElevator(msg.elev_struct);
+			writeServerBackup(&serverState);
 	    				
 			// Get first request in server queue
 			printf("(elevator_manager.c)Getting first request from server queue\n");

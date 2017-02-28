@@ -51,7 +51,7 @@ void removeRequest(){
     firstReq = (*firstReq).nextReq;
 }
 
-QueuedReq *get_Requests_Array(){
+QueueArray get_Requests_Array(){
 	QueuedReq *firstReq_Copy = firstReq;
 	// Get the length/number of requests in the queue
 	int length = 0;
@@ -60,14 +60,18 @@ QueuedReq *get_Requests_Array(){
 		length++;
 	}
 	
+	Request *requests_Array;
+	requests_Array = (Request *)malloc( sizeof(Request) * length);
+
 	firstReq_Copy = firstReq;
-	QueuedReq *requests_Array;
-	requests_Array = (QueuedReq *)malloc( sizeof(QueuedReq) * length);
 	// Fill requests_Array
 	for(int i = 0; i < length; i++){
-		requests_Array[i] = *firstReq_Copy;
+		requests_Array[i] = (*firstReq_Copy).req;
 		firstReq_Copy = (*firstReq_Copy).nextReq;
 	}
-	return requests_Array;
+	QueueArray queueArray;
+	queueArray.queue = requests_Array;
+	queueArray.length = length;
+	return queueArray;
 }
 

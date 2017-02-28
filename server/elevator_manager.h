@@ -4,7 +4,8 @@
 
 typedef struct {
 	Elevator elev_states[MAX_ELEVATORS];
-    Queued_Req queue[100000];
+	int queueLength;
+    Request queue[MAX_QUEUE_BACKUPS];
 } Server;
 
 int server_init();

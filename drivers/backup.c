@@ -26,19 +26,20 @@ void writeElevatorBackup(Elevator* elevator) {
     fclose(file);
 }
 
-Server loadServerBackup() {
-	Server buf = malloc(sizeof(Server));
+Server *loadServerBackup() {
+	Server *buf;
+	buf = malloc(sizeof(Server));
     FILE *file = fopen(SERVER_BACKUP_PATH, "rb");
     if (file != NULL)
     {
-        fread(&Data, sizeof(Server), 1, file);
+        fread(&buf, sizeof(Server), 1, file);
         fclose(file);       
     }
 	return buf;
 }
 
-Elevator loadElevatorBackup() {
-	Elevator buf = malloc(sizeof(Elevator));
+Elevator *loadElevatorBackup() {
+	Elevator *buf = malloc(sizeof(Elevator));
     FILE *file = fopen(ELEVATOR_BACKUP_PATH, "rb");
     if (file != NULL)
     {

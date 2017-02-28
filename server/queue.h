@@ -1,13 +1,20 @@
+#pragma once
+
 #include "../drivers/network_io.h"
 
-typedef struct Queued_Request QueuedReq;
+typedef struct QueuedReq QueuedReq;
 
-struct Queued_Request{
+struct QueuedReq{
     Request      req;
     QueuedReq    *nextReq;
 };
 
+typedef struct QueueArray {
+	int length;
+	Request* queue;
+} QueueArray;
+
 void storeRequest(Request newReq);
 Request getRequest();
 void removeRequest();
-QueuedReq *get_Requests_Array();
+QueueArray get_Requests_Array();
