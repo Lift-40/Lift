@@ -185,10 +185,17 @@ void updateServerStruct() {
 
 int server_init() {
 	initElevs();
-	initStates();	
-	Server *loadedBackup = malloc(sizeof(Server));
+	initStates();
+	updateServerStruct();
+	writeServerBackup(&serverState);
+	Server *loadedBackup;
+	if (( loadedBackup = (Server *)malloc( sizeof(Server) ) ) == NULL) {
+		printf("(elevator_manager.c)Out of memory for server!\n");
+        return 0;
+	}
+	
 	loadedBackup = loadServerBackup();
-	if (isValidServer(loadedBackup)) {
+	if (loadedBackup -> isValid) {
 		// restore queue backup
 		for(int i = 0; i < loadedBackup -> queueLength; i++) {
 			storeRequest(loadedBackup -> queue[i]);
