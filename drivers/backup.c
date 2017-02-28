@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include "elevator_manager.h"
-#include "elevator.h"
+#include "../server/elevator_manager.h"
+#include "../elevator/elevator.h"
 #include "queue.h"
 
 #define SERVER_BACKUP_PATH "./backups/server.bak"
