@@ -44,7 +44,7 @@ $(SERVEROBJDIR)/%.o: server/%.c
 	@mkdir -p $(@D)
 	$(CC) -o $@ -c $(CFLAGS) $<
 	
-$(CLIENTOBJDIR)/%.o: elev_algo/%.c
+$(CLIENTOBJDIR)/%.o: elevator/%.c
 	@mkdir -p $(@D)
 	$(CC) -o $@ -c $(CFLAGS) $<
 
