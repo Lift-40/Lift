@@ -13,9 +13,9 @@ CLIENT_OBJECTS = $(addprefix $(CLIENTOBJDIR)/, $(CLIENT_SOURCES:.c=.o))
 SERVER_OBJECTS = $(addprefix $(SERVEROBJDIR)/, $(SERVER_SOURCES:.c=.o))
 DRIVER_OBJECTS = $(addprefix $(DRIVEROBJDIR)/, $(DRIVER_SOURCES:.c=.o))
 
-CLIENTOBJDIR = /obj/clientobj
-SERVEROBJDIR = /obj/serverobj
-DRIVEROBJDIR = /obj/driverobj
+CLIENTOBJDIR = obj/clientobj
+SERVEROBJDIR = obj/serverobj
+DRIVEROBJDIR = obj/driverobj
 
 all: $(EXECUTABLE_DRIVERS) $(EXECUTABLE_SERVER) $(EXECUTABLE_CLIENT) 
 
