@@ -1,7 +1,7 @@
 #pragma once
 #include <stdbool.h>
-#include "../elev_algo/elevator_io_types.h"
-#include "../elev_algo/elevator.h"
+#include "../elevator/elevator_io_types.h"
+#include "../elevator/elevator.h"
 
 typedef struct {
     int floor;
