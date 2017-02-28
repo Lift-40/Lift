@@ -89,6 +89,5 @@ Elevator readElevator(char *ip) {
 }
 
 Elevator readElevatorByIndex(int index) {
-	printf("(elevator_storage.c)Attempting to read elevator at index %d\n", index);
     return elev_states[index];
 }

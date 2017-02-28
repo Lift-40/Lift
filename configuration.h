@@ -3,4 +3,4 @@
 #define INF 999999999
 #define SERVER_BACKUP_PATH "server.bak"
 #define ELEVATOR_BACKUP_PATH "elevator.bak"
-#define MAX_QUEUE_BACKUPS 100000
+#define MAX_QUEUE_BACKUPS 100

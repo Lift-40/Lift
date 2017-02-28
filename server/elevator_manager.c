@@ -167,6 +167,8 @@ void removeElev(const char * ip){
 }
 
 void updateServerStruct() {	
+	serverState.isValid = false;
+	
 	QueueArray tmp;
 	
 	tmp = get_Requests_Array();
@@ -179,6 +181,8 @@ void updateServerStruct() {
 	for(int i = 0; i < MAX_ELEVATORS; i++) {
 		serverState.elev_states[i] = readElevatorByIndex(i);
 	}
+	
+	serverState.isValid = true;
 }
 
 /*-----------------------------EXTERNAL FUNCIONS---------------------------------*/
