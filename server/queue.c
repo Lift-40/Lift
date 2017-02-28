@@ -5,13 +5,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-typedef struct Queued_Request QueuedReq;
-
-struct Queued_Request{
-    Request      req;
-    QueuedReq    *nextReq;
-};
-
 QueuedReq *firstReq;
 QueuedReq *lastReq;
 
@@ -55,5 +48,25 @@ void removeRequest(){
     //QueuedReq *secondReq = (*firstReq) -> nextReq;
     //*firstReq = secondReq;
     firstReq = (*firstReq).nextReq;
+}
+
+QueuedReq *get_Requests_Array(){
+	QueuedReq *firstReq_Copy = firstReq;
+	// Get the length/number of requests in the queue
+	int length = 0;
+	while(firstReq_Copy != NULL){
+		firstReq_Copy = (*firstReq_Copy).nextReq;
+		length++;
+	}
+	
+	firstReq_Copy = firstReq;
+	QueuedReq *requests_Array;
+	requests_Array = (QueuedReq *)malloc( sizeof(QueuedReq) * length);
+	// Fill requests_Array
+	for(int i = 0; i < length; i++){
+		requests_Array[i] = *firstReq_Copy;
+		firstReq_Copy = (*firstReq_Copy).nextReq;
+	}
+	return requests_Array;
 }
 
