@@ -71,7 +71,7 @@ void fsm_onRequestButtonPress(int btn_floor, Button btn_type, bool reqIsFromServ
 	
 	printf("(fsm.c)connectionAvailable(serverIP): %i\n", connectionAvailable(serverIP));
     
-	if (reqIsFromServer || !connectionAvailable(serverIP)) {
+	if (reqIsFromServer || !connectionAvailable(serverIP) || btn_type == B_Cab) {
 		switch(elevator.behaviour){
 
 		case EB_DoorOpen:
@@ -117,7 +117,7 @@ void fsm_onRequestButtonPress(int btn_floor, Button btn_type, bool reqIsFromServ
 		sendMessage(msg);
 		//printf("Done\n");
 	}	
-	if (!reqIsFromServer) {
+	if (!reqIsFromServer && btn_type != B_Cab) {
 		printf("(fsm.c)Got an internal request, attempting to send order ( %d, %02x ) to the server\n", btn_floor, btn_type);
 		// order is from one of the elevator buttons, send it to the server
 		msg.type = req;

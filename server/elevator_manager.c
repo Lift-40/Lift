@@ -19,11 +19,19 @@ char * findBestElev(Request request){
     int floorOfReq = request.floor;
     Button pressedButton = request.button;
 	
+	printf("\nFind best elevator for request:");
 	printReq(request);
 
     int stop = 0;
 
-    Elevator elev_states[MAX_ELEVATORS];
+    Elevator elev_States_Server[MAX_ELEVATORS];
+	// ADDED NOW
+    for(int i = 0; i < MAX_ELEVATORS; i++){
+		Elevator emptyElevator;
+		emptyElevator.isEmpty = true;
+		emptyElevator.ip[0] = 0;
+		memcpy(&elev_States_Server[i], &emptyElevator, sizeof(Elevator));
+    }
 
     char bestElevatorIP[32] = "";
 
@@ -32,14 +40,14 @@ char * findBestElev(Request request){
 			Elevator data;
 			data = readElevator(available_elevators[i]);
 			//printf("Read elevator\n");
-			memcpy( &elev_states[i], &data, sizeof(Elevator) );
+			memcpy( &elev_States_Server[i], &data, sizeof(Elevator) );
 			printf("(elevator_manager.c)Getting elevator struct from storage: %i\n",i);
-			printf("(elevator_manager.c)elev_struct.isEmpty: %i\n",elev_states[i].isEmpty);
+			printf("(elevator_manager.c)elev_struct.isEmpty: %i\n",elev_States_Server[i].isEmpty);
 		} 
 		// If one elevator is currently idle in the requested floor, select that one    	
-		if (!elev_states[i].isEmpty && elev_states[i].behaviour == EB_Idle && elev_states[i].floor == floorOfReq){
+		if (!elev_States_Server[i].isEmpty && (elev_States_Server[i].behaviour == EB_Idle || elev_States_Server[i].behaviour == EB_DoorOpen) && elev_States_Server[i].floor == floorOfReq){
 			printf("(elevator_manager.c)Best elevator is idle on floor: %i\n",i);
-			strcpy(bestElevatorIP, elev_states[i].ip);
+			strcpy(bestElevatorIP, elev_States_Server[i].ip);
 			stop = 1;
 		}
     }
@@ -57,19 +65,20 @@ char * findBestElev(Request request){
 		//printf("Didnt stop, pressedButton: Down or floor = 0 && pressedButton: Up\n");
 
 		for (int i = 0; i < MAX_ELEVATORS; i++) {
-			if (!elev_states[i].isEmpty && elev_states[i].behaviour == EB_Idle) {
-
-				floorDiff = elev_states[i].floor - floorOfReq;
-				if (floorDiff > 0 && floorDiff < minFloorDiffIdle) {
+			if (!elev_States_Server[i].isEmpty && (elev_States_Server[i].behaviour == EB_Idle || elev_States_Server[i].behaviour == EB_DoorOpen)) {
+				
+				// ERROR IN LOGIC - WE JUST WANT TO CHOOSE THE CLOSEST ONE, NO MATTER IF IT'S ABOVE OR BELOW
+				floorDiff = abs(elev_States_Server[i].floor - floorOfReq);
+				if (floorDiff < minFloorDiffIdle) {
 
 					minFloorDiffIdle = floorDiff;
 					indexIdle = i;
 
 				}
 			 }
-			 else if (!elev_states[i].isEmpty && elev_states[i].behaviour == EB_Moving) {
+			 else if (!elev_States_Server[i].isEmpty && elev_States_Server[i].behaviour == EB_Moving) {
 
-				floorDiff = elev_states[i].floor - floorOfReq;
+				floorDiff = elev_States_Server[i].floor - floorOfReq;
 				if (floorDiff > 0 && floorDiff < minFloorDiffMov) {
 
 					minFloorDiffMov = floorDiff;
@@ -79,29 +88,29 @@ char * findBestElev(Request request){
 			 }
 		}
 		if (minFloorDiffMov <= minFloorDiffIdle && indexMov != -1) {
-			strcpy(bestElevatorIP, elev_states[indexMov].ip);
-			// bestElevatorIP = elev_states[indexMov].ip;
+			strcpy(bestElevatorIP, elev_States_Server[indexMov].ip);
+			// bestElevatorIP = elev_States_Server[indexMov].ip;
 		} else if (indexIdle != -1) {
-			strcpy(bestElevatorIP, elev_states[indexIdle].ip);
-			// bestElevatorIP = elev_states[indexIdle];
+			strcpy(bestElevatorIP, elev_States_Server[indexIdle].ip);
+			// bestElevatorIP = elev_States_Server[indexIdle];
 		}
     }
     else if (stop == 0 && (pressedButton == B_HallUp || (floorOfReq == NUM_FLOORS-1 && pressedButton == B_HallDown))) {
 		//printf("Didnt stop, pressedButton: Up or floor = 3 && pressedButton: Down\n");
     	for (int i = 0; i < MAX_ELEVATORS; i++) {
-			if (!elev_states[i].isEmpty && elev_states[i].behaviour == EB_Idle) {
+			if (!elev_States_Server[i].isEmpty && (elev_States_Server[i].behaviour == EB_Idle || elev_States_Server[i].behaviour == EB_DoorOpen)) {
 
-				floorDiff = -(elev_states[i].floor - floorOfReq);
-				if (floorDiff > 0 && floorDiff < minFloorDiffIdle) {
+				floorDiff = abs(elev_States_Server[i].floor - floorOfReq);
+				if (floorDiff < minFloorDiffIdle) {
 
 					minFloorDiffIdle = floorDiff;
 					indexIdle = i;
 
 				}
 	    	}
-            else if (!elev_states[i].isEmpty && elev_states[i].behaviour == EB_Moving) {
+            else if (!elev_States_Server[i].isEmpty && elev_States_Server[i].behaviour == EB_Moving) {
 		    
-				floorDiff = -(elev_states[i].floor - floorOfReq);
+				floorDiff = -(elev_States_Server[i].floor - floorOfReq);
 				if (floorDiff > 0 && floorDiff < minFloorDiffMov) {
 
 					minFloorDiffMov = floorDiff;
@@ -111,20 +120,20 @@ char * findBestElev(Request request){
 			}
         }
 		if (minFloorDiffMov <= minFloorDiffIdle && indexMov != -1) {
-			strcpy(bestElevatorIP, elev_states[indexMov].ip);
-            // bestElevatorIP = elev_states[indexMov];
+			strcpy(bestElevatorIP, elev_States_Server[indexMov].ip);
+            // bestElevatorIP = elev_States_Server[indexMov];
         } else if (indexIdle != -1) {
-			strcpy(bestElevatorIP, elev_states[indexIdle].ip);
-	    	// bestElevatorIP = elev_states[indexIdle];
+			strcpy(bestElevatorIP, elev_States_Server[indexIdle].ip);
+	    	// bestElevatorIP = elev_States_Server[indexIdle];
         }	
     }
 	if(((indexMov == -1) && (indexIdle == -1) ) && stop != 1) {
 		bestElevatorIP[0] = 0;
-	} else if (indexIdle != -1 && stop == 0) {
-		strcpy(bestElevatorIP, elev_states[indexIdle].ip);
+	}/* else if (indexIdle != -1 && stop == 0) {
+		strcpy(bestElevatorIP, elev_States_Server[indexIdle].ip);
 	} else if (indexMov != -1 && stop  == 0) {
-		strcpy(bestElevatorIP, elev_states[indexMov].ip);
-	}
+		strcpy(bestElevatorIP, elev_States_Server[indexMov].ip);
+	}*/
 	char * buf = malloc(sizeof(char)*32);
 	sprintf(buf, "%s", bestElevatorIP);
 	return buf;
