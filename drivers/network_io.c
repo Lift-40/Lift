@@ -263,14 +263,16 @@ char * getMyIP() {
 	return getMyIpAddress(NETW_INTERFACE);
 }
 
-void networkInit(int port_Number, senderRole role) {
+void networkInit(int elevator_number, senderRole role) {
     initIps();
     tcp_init(receiveTCPMsg, tcpConnectionCallback);
 	if (role == server) {
-		udp_startReceiving(4041,receiveUDPMsg);
-		tcp_startConnectionListening(4044);
+		for(int i = 0; i < MAX_ELEVATORS; i++) {
+			udp_startReceiving(BASE_PORT + 10*i,receiveUDPMsg);
+			tcp_startConnectionListening(BASE_PORT + 10*i+1);
+		}
 	} else {
-		udp_startReceiving(4040,receiveUDPMsg);
-		tcp_startConnectionListening(port_Number);
+		udp_startReceiving(BASE_PORT + 10*elevator_number+2,receiveUDPMsg);
+		tcp_startConnectionListening(BASE_PORT + 10*elevator_number+3);
 	}
 }
