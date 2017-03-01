@@ -92,7 +92,6 @@ void receiveUDPMsg(const char * ip, char * data, int datalength){
 	//printf("UDP message copied to memory\n");
 	printMsg(msg);
     add_msg_to_queue(msg);
-	addIp(msg.senderIP);
 	//printf("UDP message added to queue successfully\n");
 }
 
@@ -183,10 +182,10 @@ void sendMessage(Message msg){
     tcp_send(msg.destinationIP, &data, sizeof( Message ));
     Message sentmsg;
     memcpy( &sentmsg, data, sizeof(Message) );
-	printf("(network_io.c)Message that arrives\n");
-	printMsg(msg);
-	printf("(network_io.c)Message that is sent\n");
-	printMsg(sentmsg);
+	//printf("(network_io.c)Message that arrives\n");
+	//printMsg(msg);
+	//printf("(network_io.c)Message that is sent\n");
+	//printMsg(sentmsg);
 }
 
 void printMsg(Message msg){

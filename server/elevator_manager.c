@@ -296,5 +296,5 @@ int server_routine() {
 			}
 		}
     }
-	sleep(2);
+	sleep(1);
 }

@@ -36,6 +36,19 @@ int main(int argc, char *argv[]){
     }
         
     while(1){
+		
+		printf("(fsm.c)connectionAvailable(serverIP): %i\n", connectionAvailable(serverIP));
+		printf("ServerIP: %s\n", serverIP);
+		if (!connectionAvailable(serverIP) && serverIP[0] != 0) {
+			printf("Attempting to connect to server\n");
+			Message msg;
+			msg.type = broadcast;
+			msg.role = elev;
+			msg.isEmpty = true;
+			strcpy(msg.destinationIP, serverIP);
+			sendMessage(msg);
+		}
+		
         { // Request button
             static int prev[N_FLOORS][N_BUTTONS];
             for(int f = 0; f < N_FLOORS; f++){
@@ -62,7 +75,7 @@ int main(int argc, char *argv[]){
 					fsm_onRequestButtonPress(msg.request.floor, msg.request.button, true);
 				}
 				// TODO: The light message type needs to be handled here
-			}	
+			}
 		}
         
         { // Floor sensor
@@ -83,6 +96,7 @@ int main(int argc, char *argv[]){
         }
         
         usleep(inputPollRate_ms*1000);
+		printf("\n-------------------------------------\n");
     }
 }
 
