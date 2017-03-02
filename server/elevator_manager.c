@@ -67,7 +67,6 @@ char * findBestElev(Request request){
 		for (int i = 0; i < MAX_ELEVATORS; i++) {
 			if (!elev_States_Server[i].isEmpty && (elev_States_Server[i].behaviour == EB_Idle || elev_States_Server[i].behaviour == EB_DoorOpen)) {
 				
-				// ERROR IN LOGIC - WE JUST WANT TO CHOOSE THE CLOSEST ONE, NO MATTER IF IT'S ABOVE OR BELOW
 				floorDiff = abs(elev_States_Server[i].floor - floorOfReq);
 				if (floorDiff < minFloorDiffIdle) {
 
@@ -127,7 +126,7 @@ char * findBestElev(Request request){
 	    	// bestElevatorIP = elev_States_Server[indexIdle];
         }	
     }
-	if(((indexMov == -1) && (indexIdle == -1) ) && stop != 1) {
+	if(((indexMov == -1) && (indexIdle == -1) ) && stop == 0) {
 		bestElevatorIP[0] = 0;
 	}/* else if (indexIdle != -1 && stop == 0) {
 		strcpy(bestElevatorIP, elev_States_Server[indexIdle].ip);
@@ -200,7 +199,6 @@ int server_init() {
 	initElevs();
 	initStates();
 	updateServerStruct();
-	writeServerBackup(&serverState);
 	Server *loadedBackup;
 	if (( loadedBackup = (Server *)malloc( sizeof(Server) ) ) == NULL) {
 		printf("(elevator_manager.c)Out of memory for server!\n");
@@ -210,11 +208,14 @@ int server_init() {
 	loadedBackup = loadServerBackup();
 	if (loadedBackup -> isValid) {
 		// restore queue backup
+		printf("(elevator_manager.c)Attempting to restore backup\n");
 		for(int i = 0; i < loadedBackup -> queueLength; i++) {
+			printf("(elevator_manager.c)Loaded order %d\n", i);
 			storeRequest(loadedBackup -> queue[i]);
 		}
 		// restore elevator state backups
 		for(int i = 0; i < MAX_ELEVATORS; i++) {
+			printf("(elevator_manager.c)Loaded elev state %d\n", i);
 			storeElevator(loadedBackup -> elev_states[i]);
 		}
 	}
@@ -259,7 +260,9 @@ int server_routine() {
 				removeRequest();
 			}
 
-    	}
+    	} else if (msg.type == broadcast) {
+			addElev(msg.senderIP);
+		}
 		// There's no need to handle the light type since those orders will only be sent to the elevators
 	}
 	
@@ -296,5 +299,6 @@ int server_routine() {
 			}
 		}
     }
+	printf("\n------------------------------------------------\n");
 	sleep(1);
 }

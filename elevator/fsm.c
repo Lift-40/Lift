@@ -12,7 +12,7 @@
 #include "../configuration.h"
 
 static Message msg;
-static Elevator             elevator;
+Elevator             elevator;
 static ElevOutputDevice     outputDevice;
 extern char serverIP[32];
 
@@ -72,11 +72,29 @@ void fsm_onRequestButtonPress(int btn_floor, Button btn_type, bool reqIsFromServ
 	printf("(fsm.c)connectionAvailable(serverIP): %i\n", connectionAvailable(serverIP));
     
 	if (reqIsFromServer || !connectionAvailable(serverIP) || btn_type == B_Cab) {
+		/*if(elevator.floor == btn_floor && (elevator.behaviour == EB_DoorOpen || elevator.behaviour == EB_Idle)) {
+			elevator.requests[btn_floor][btn_type] = 1;
+			strcpy(msg.destinationIP, serverIP);
+			msg.type = elev_state;
+			Request emptyRequest;
+			emptyRequest.floor = NUM_FLOORS + 1;
+			emptyRequest.isEmpty = true;
+			msg.request = emptyRequest;
+			msg.elev_struct = elevator;
+			if (serverIP[0] != 0) {
+				printf("(fsm.c)Sending elevator structure to the server, ElevatorOnFloor\n");
+				sendMessage(msg);
+				//printf("Done\n");
+			}	
+			elevator.requests[btn_floor][btn_type] = 0;
+		}*/
+	
 		switch(elevator.behaviour){
 
 		case EB_DoorOpen:
 			if(elevator.floor == btn_floor){
 				timer_start(elevator.config.doorOpenDuration_s);
+				elevator.requests[btn_floor][btn_type] = 1;
 			} else {
 				elevator.requests[btn_floor][btn_type] = 1;
 			}
@@ -91,6 +109,7 @@ void fsm_onRequestButtonPress(int btn_floor, Button btn_type, bool reqIsFromServ
 				outputDevice.doorLight(1);
 				timer_start(elevator.config.doorOpenDuration_s);
 				elevator.behaviour = EB_DoorOpen;
+				elevator.requests[btn_floor][btn_type] = 1;
 			} else {
 				elevator.requests[btn_floor][btn_type] = 1;
 				elevator.dirn = requests_chooseDirection(elevator);

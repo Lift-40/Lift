@@ -11,8 +11,12 @@
 #include "../drivers/network_io.h"
 #include "fsm.h"
 #include "timer.h"
+#include <time.h>
+
 
 char serverIP[32] = "";
+
+extern Elevator elevator;
 
 int main(int argc, char *argv[]){
     printf("Started!\n");
@@ -34,8 +38,28 @@ int main(int argc, char *argv[]){
     if(input.floorSensor() == -1){
         fsm_onInitBetweenFloors();
     }
+	
+	unsigned int prevTime = time(0);
         
     while(1){
+		
+		if (time(0) > prevTime + 3){
+			Message msg;
+			strcpy(msg.destinationIP, serverIP);
+			strcpy(msg.senderIP, getMyIP());
+			msg.type = elev_state;
+			Request emptyRequest;
+			emptyRequest.floor = NUM_FLOORS + 1;
+			emptyRequest.isEmpty = true;
+			msg.request = emptyRequest;
+			msg.isEmpty = false;
+			msg.elev_struct = elevator;
+			if (serverIP[0] != 0) {
+				printf("(main.c)Sending elevator structure to the server, timer\n");
+				sendMessage(msg);
+			}	
+			prevTime = time(0);
+		}
 		
 		printf("(fsm.c)connectionAvailable(serverIP): %i\n", connectionAvailable(serverIP));
 		printf("ServerIP: %s\n", serverIP);
@@ -44,8 +68,9 @@ int main(int argc, char *argv[]){
 			Message msg;
 			msg.type = broadcast;
 			msg.role = elev;
-			msg.isEmpty = true;
+			msg.isEmpty = false;
 			strcpy(msg.destinationIP, serverIP);
+			strcpy(msg.senderIP, getMyIP());
 			sendMessage(msg);
 		}
 		
