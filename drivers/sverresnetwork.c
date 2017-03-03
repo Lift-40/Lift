@@ -237,8 +237,8 @@ void
 conn_add(char * ip,int s){
   int i;
 
-  if(conn_lookup(ip))
-    error("conn_add: Trying to add an already existing connection");
+  //if(conn_lookup(ip))
+    //error("conn_add: Trying to add an already existing connection");
 
   for(i=0;i<MAXTCPCONNECTIONS;i++){
     if(tcpConnections[i].socket == 0){
