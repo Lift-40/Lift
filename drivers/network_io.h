@@ -24,6 +24,7 @@ typedef enum {
 typedef struct {
     char senderIP[32];
     char destinationIP[32];
+	int elevatorID;
     msgType type;
     Request request; 
     Elevator elev_struct;
@@ -34,7 +35,7 @@ typedef struct {
 void sendMessage(Message msg);
 Message receiveMessage(void);
 bool connectionAvailable(char *ipAddress);
-void broadcastIP(senderRole role);
+void broadcastIP(senderRole role, int elevatorID);
 void networkInit(int port_Number, senderRole role);
 void printReq(Request req);
 char * getMyIP();

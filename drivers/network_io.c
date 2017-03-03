@@ -163,10 +163,10 @@ void sendMessage(Message msg){
 	int tcpPortNumber;
 	if (msg.role == server){
 		printf("(network_io.c)Attempting to send message to elevator with IP: %s\n", msg.destinationIP);
-		tcpPortNumber = 4043;
+		tcpPortNumber = BASE_PORT + 10*msg.elevatorID+3;
 	} else if (msg.role == elev){
 		printf("(network_io.c)Attempting to send message to server with IP: %s\n", msg.destinationIP);
-		tcpPortNumber = 4044;
+		tcpPortNumber = BASE_PORT + 10*msg.elevatorID+1;
 	}
 
 	printf("(network_io.c)connectionAvailable(msg.destinationIP): %i\n", connectionAvailable(msg.destinationIP));
@@ -239,23 +239,27 @@ bool connectionAvailable(char *ipAddress){
     return false;
 }
 
-void broadcastIP(senderRole role){
-	int tcpPortNumber;
-	if (role == server) {
-		tcpPortNumber = 4040;
-	} else {
-		tcpPortNumber = 4041;
-	}
+void broadcastIP(senderRole role, int elevatorID){
+	int udpPortNumber;
 	Message msg;
 	strcpy(msg.senderIP, getMyIP());
 	// msg.senderIP = getMyIP();
 	msg.role = role;
 	msg.type = broadcast;
+	msg.elevatorID = elevatorID;
 	msg.isEmpty = false;
 	printf("(network_io.c)Broadcasting IP, msg.senderIP: %s\n", msg.senderIP);
     char data[sizeof( Message )];
     memcpy( data, &msg, sizeof( Message ) );
-    udp_broadcast( tcpPortNumber, &data[0], sizeof( Message )); // Try with sizeof()
+	if (role == server) {
+		for(int i = 1; i < MAX_ELEVATORS + 1; i++) {
+			udpPortNumber = BASE_PORT + 10*i+2;
+    		udp_broadcast( udpPortNumber, &data[0], sizeof( Message ));
+		}
+	} else {
+		udpPortNumber = BASE_PORT;
+		udp_broadcast( udpPortNumber, &data[0], sizeof( Message ));
+	}
 }
 
 char * getMyIP() {
@@ -263,24 +267,16 @@ char * getMyIP() {
 	return getMyIpAddress(NETW_INTERFACE);
 }
 
-//void networkInit(int elevator_number, senderRole role) {
-void networkInit(int port_Number, senderRole role) {
+void networkInit(int elevatorID, senderRole role) {
     initIps();
     tcp_init(receiveTCPMsg, tcpConnectionCallback);
-	/*if (role == server) {
-		for(int i = 0; i < MAX_ELEVATORS; i++) {
-			udp_startReceiving(BASE_PORT + 10*i,receiveUDPMsg);
+	if (role == server) {
+		udp_startReceiving(BASE_PORT, receiveUDPMsg);
+		for(int i = 1; i < MAX_ELEVATORS + 1; i++) {
 			tcp_startConnectionListening(BASE_PORT + 10*i+1);
 		}
 	} else {
-		udp_startReceiving(BASE_PORT + 10*elevator_number+2,receiveUDPMsg);
-		tcp_startConnectionListening(BASE_PORT + 10*elevator_number+3);
-	}*/
-	if (role == server) {
-		udp_startReceiving(4041,receiveUDPMsg);
-		tcp_startConnectionListening(4044);
-	} else {
-		udp_startReceiving(4040,receiveUDPMsg);
-		tcp_startConnectionListening(port_Number);
+		udp_startReceiving(BASE_PORT + 10*elevatorID+2,receiveUDPMsg);
+		tcp_startConnectionListening(BASE_PORT + 10*elevatorID+3);
 	}
 }

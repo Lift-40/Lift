@@ -15,6 +15,7 @@ static Message msg;
 Elevator             elevator;
 static ElevOutputDevice     outputDevice;
 extern char serverIP[32];
+extern int elevatorID;
 
 static void __attribute__((constructor)) fsm_init(){
     elevator = elevator_uninitialized();
@@ -34,6 +35,8 @@ static void __attribute__((constructor)) fsm_init(){
 	// msg.destinationIP = serverIP;
 	msg.role = elev;
 	msg.isEmpty = false;
+	elevator.elevatorID = elevatorID;
+	msg.elevatorID = elevatorID;
     
     outputDevice = elevio_getOutputDevice();
 }

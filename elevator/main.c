@@ -16,6 +16,8 @@
 
 char serverIP[32] = "";
 
+int elevatorID = -1;
+
 extern Elevator elevator;
 
 int main(int argc, char *argv[]){
@@ -31,7 +33,9 @@ int main(int argc, char *argv[]){
 		exit(1);
 	}
 	
-	networkInit(atoi(argv[1]), elev);
+	elevatorID = atoi(argv[1]);
+	
+	networkInit(elevatorID, elev);
 	
     ElevInputDevice input = elevio_getInputDevice();
 	    
@@ -48,6 +52,7 @@ int main(int argc, char *argv[]){
 			strcpy(msg.destinationIP, serverIP);
 			strcpy(msg.senderIP, getMyIP());
 			msg.type = elev_state;
+			msg.elevatorID = elevatorID;
 			Request emptyRequest;
 			emptyRequest.floor = NUM_FLOORS + 1;
 			emptyRequest.isEmpty = true;
@@ -67,6 +72,7 @@ int main(int argc, char *argv[]){
 			printf("Attempting to connect to server\n");
 			Message msg;
 			msg.type = broadcast;
+			msg.elevatorID = elevatorID;
 			msg.role = elev;
 			msg.isEmpty = false;
 			strcpy(msg.destinationIP, serverIP);

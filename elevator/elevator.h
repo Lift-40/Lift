@@ -20,6 +20,7 @@ typedef enum {
 } ClearRequestVariant;
 
 typedef struct {
+	int                     elevatorID;
     char                    ip[32];
     int                     floor;
     Dirn                    dirn;
