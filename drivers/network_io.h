@@ -18,6 +18,7 @@ typedef enum {
     req,
     elev_state,
     light_update,
+	light_update_onFloorArrival,
 	broadcast
 } msgType;
 

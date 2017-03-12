@@ -20,9 +20,9 @@ void udp_broadcast(int port,char * data, int dataLength);
 
 // TCP 
 void tcp_init(TMessageCallback messageCallback, TTcpConnectionCallback connectionCallback);
-void tcp_startConnectionListening(int port);
-void tcp_openConnection(char * ip,int port);
-void tcp_send(char * ip,char * data, int datalength);
+void tcp_startConnectionListening(int id);
+void tcp_openConnection(char * ip,int port,int id);
+void tcp_send(char * ip,char * data, int datalength, int id);
 
 
 #endif

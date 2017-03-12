@@ -15,11 +15,18 @@ void writeServerBackup(Server* server) {
     fclose(file);
 }
 
-void writeElevatorBackup(Elevator* elevator) {
-	printf("(backup.c)Attempting store elevator backup\n");
-    FILE *file = fopen(ELEVATOR_BACKUP_PATH, "w");
+void writeElevatorBackup(Elevator* elevator, int id) {
+	printf("(backup.c)Attempting store backup for elevator: &d\n", id);
+	
+	char name[100] = {'\0'};
+    sprintf(name, "elevator-%d.bak", id);
+    printf("(backup.c)Trying to open file %s...\n", name);
+    
+	FILE *file = fopen(name, "w");
     fwrite(elevator, sizeof(Elevator), 1, file);
+	printf("(backup.c)File %s was writen...\n", name);
     fclose(file);
+	printf("(backup.c)Closing file %s...\n", name);
 }
 
 Server *loadServerBackup() {
@@ -44,8 +51,8 @@ Server *loadServerBackup() {
 	return buf;
 }
 
-Elevator *loadElevatorBackup() {
-	printf("(backup.c)Attempting load elevator backup\n");
+Elevator *loadElevatorBackup(int id) {
+	printf("(backup.c)Attempting load backup for elevator: %d\n", id);
 	Elevator *buf;
 	
 	if (( buf = (Elevator *)malloc(sizeof(Elevator)) ) == NULL) {
@@ -53,17 +60,28 @@ Elevator *loadElevatorBackup() {
         exit(1);
 	}
 	
-    FILE *file = fopen(ELEVATOR_BACKUP_PATH, "rb");
-    if (file != NULL && access(ELEVATOR_BACKUP_PATH, R_OK))
+	char name[100] = {'\0'};
+    sprintf(name, "elevator-%d.bak", id);
+    printf("(backup.c)Trying to open file %s...\n", name);
+	
+    FILE *file = fopen(name, "rb");
+    if (file != NULL)
     {
         fread(buf, sizeof(Elevator), 1, file);
         fclose(file);       
-    }
+    } else {
+		printf("(backup.c)Failed to load elevator backup!\n");
+	}
 	return buf;
 }
 
-void removeElevatorBackup() {
-	fclose(fopen(ELEVATOR_BACKUP_PATH, "w"));
+void removeElevatorBackup(int id) {
+	
+	char name[100] = {'\0'};
+    sprintf(name, "elevator-%d.bak", id);
+    printf("(backup.c)Trying to open file %s...\n", name);
+	
+	fclose(fopen(name, "w"));
 }
 
 void removeServerBackup() {

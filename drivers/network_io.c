@@ -161,27 +161,47 @@ void tcpConnectionCallback(const char * ip, int created){
 
 void sendMessage(Message msg){
 	int tcpPortNumber;
+	int id;
 	if (msg.role == server){
+		if (msg.type == req){
+			printf("Sending message to elevator %d with port number %i\n", msg.elevatorID, BASE_PORT+10*msg.elevatorID+3);
+		}
 		printf("(network_io.c)Attempting to send message to elevator with IP: %s\n", msg.destinationIP);
 		tcpPortNumber = BASE_PORT + 10*msg.elevatorID+3;
+		id = msg.elevatorID;
 	} else if (msg.role == elev){
 		printf("(network_io.c)Attempting to send message to server with IP: %s\n", msg.destinationIP);
 		tcpPortNumber = BASE_PORT + 10*msg.elevatorID+1;
+		id = 0;
 	}
 
 	printf("(network_io.c)connectionAvailable(msg.destinationIP): %i\n", connectionAvailable(msg.destinationIP));
 	if (!connectionAvailable(msg.destinationIP)) {
-		tcp_openConnection(msg.destinationIP,tcpPortNumber);
+		if (msg.role == server && msg.type == req){
+			printf("Sending message to elevator %d with port number %i\n", msg.elevatorID, BASE_PORT+10*msg.elevatorID+3);
+		}
+		tcp_openConnection(msg.destinationIP,tcpPortNumber,id);
 	}
 	
     char data[ sizeof(Message) ];
 	
 	//printf("message size: %d\n", sizeof(Message));
+	if (msg.role == server && msg.type == req){
+		printf("Sending message to elevator %d with port number %i\n", msg.elevatorID, BASE_PORT+10*msg.elevatorID+3);
+	}
     memcpy( data, &msg, sizeof( Message ) );
 	//printf("memcpy data: %s\n", data);
-    tcp_send(msg.destinationIP, &data, sizeof( Message ));
+	if (msg.role == server){
+		tcp_send(msg.destinationIP, &data, sizeof( Message ), msg.elevatorID);
+	} else if (msg.role == elev){
+		tcp_send(msg.destinationIP, &data, sizeof( Message ), 0);//id);
+	}
+    
     Message sentmsg;
     memcpy( &sentmsg, data, sizeof(Message) );
+	if (sentmsg.role == server && sentmsg.type == req){
+		printf("Sent message to elevator %d with port number %i\n", sentmsg.elevatorID, BASE_PORT+10*sentmsg.elevatorID+3);
+	}
 	//printf("(network_io.c)Message that arrives\n");
 	//printMsg(msg);
 	//printf("(network_io.c)Message that is sent\n");
@@ -273,10 +293,15 @@ void networkInit(int elevatorID, senderRole role) {
 	if (role == server) {
 		udp_startReceiving(BASE_PORT, receiveUDPMsg);
 		for(int i = 1; i < MAX_ELEVATORS + 1; i++) {
-			tcp_startConnectionListening(BASE_PORT + 10*i+1);
+			//tcp_startConnectionListening(BASE_PORT + 10*i+1);
+			tcp_startConnectionListening( i+3 );
+			sleep(1);
 		}
 	} else {
 		udp_startReceiving(BASE_PORT + 10*elevatorID+2,receiveUDPMsg);
-		tcp_startConnectionListening(BASE_PORT + 10*elevatorID+3);
+		printf("(network_io.c)udp_startReceiving\n");
+		//tcp_startConnectionListening(BASE_PORT + 10*elevatorID+3);
+		tcp_startConnectionListening( elevatorID );
+		printf("(network_io.c)tcp_startConnectionListening\n");
 	}
 }

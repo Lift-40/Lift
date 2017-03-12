@@ -21,6 +21,8 @@
 #include "sverresnetwork.h"
 
 #include "sverresnetwork.h"
+#include "network_io.h"
+#include "../configuration.h"
 
 void 
 error(char *s)
@@ -197,9 +199,15 @@ static TTcpConnectionCallback m_connectionCallback = NULL;
 
 #define MAXTCPCONNECTIONS 100
 
+/*typedef struct {
+  char ip[32];
+  int socket;
+} TTcpConnection;*/
+
 typedef struct {
   char ip[32];
   int socket;
+  int ID;
 } TTcpConnection;
 
 static TTcpConnection tcpConnections[MAXTCPCONNECTIONS];
@@ -207,14 +215,17 @@ static TTcpConnection tcpConnections[MAXTCPCONNECTIONS];
 void
 conn_init(){
   int i;
-  for(i=0;i<MAXTCPCONNECTIONS;i++) tcpConnections[i].socket=0;
+  for(i=0;i<MAXTCPCONNECTIONS;i++){
+    tcpConnections[i].socket=0;
+	tcpConnections[i].ID=-1;
+  }
 }
 
 int 
-conn_lookup(char * ip){
+conn_lookup(char * ip, int id){
   int i;
   for(i=0;i<MAXTCPCONNECTIONS;i++){
-    if(strncmp(tcpConnections[i].ip,ip,30) == 0 && tcpConnections[i].socket != 0){
+    if(strncmp(tcpConnections[i].ip,ip,30) == 0 && tcpConnections[i].socket != 0 && tcpConnections[i].ID == id){
       return tcpConnections[i].socket;
     }
   }
@@ -234,27 +245,38 @@ conn_findIp(int socket){
 
 
 void
-conn_add(char * ip,int s){
+conn_add(char * ip,int s,int id){
   int i;
-
-  //if(conn_lookup(ip))
-    //error("conn_add: Trying to add an already existing connection");
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /*if(conn_lookup(ip))
+    error("conn_add: Trying to add an already existing connection");*/
 
   for(i=0;i<MAXTCPCONNECTIONS;i++){
     if(tcpConnections[i].socket == 0){
       strncpy(tcpConnections[i].ip,ip,30);
       tcpConnections[i].socket = s;
+	  tcpConnections[i].ID = id;
       return;
     }
   }
   error("conn_add: No free connection slots?");
 }
 
-void
+/*void
 conn_remove(const char * ip){
   int i;
   for(i=0;i<MAXTCPCONNECTIONS;i++){
     if(strncmp(tcpConnections[i].ip,ip,30) == 0){
+      tcpConnections[i].socket = 0;
+    }
+  }
+}*/
+
+void
+conn_remove(int s){
+  int i;
+  for(i=0;i<MAXTCPCONNECTIONS;i++){
+    if(tcpConnections[i].socket == s){
       tcpConnections[i].socket = 0;
     }
   }
@@ -271,12 +293,14 @@ thr_tcpMessageListen(void * parameter){
   while(1){
     bzero(buffer,1024);
     int n = read(socket,buffer,1020);
+	printf("SverresNetwork: Number of bytes read - %d\n", n);
     if(n <= 0){
       // Something wrong; close and give up
       close(socket);
       if(m_log) printf("SverresNetwork: Lost a connection to %s - socket %d\n",conn_findIp(socket),socket);
       m_connectionCallback(conn_findIp(socket),0);
-      conn_remove(conn_findIp(socket));
+      //conn_remove(conn_findIp(socket));
+	  conn_remove(socket);
       return NULL;
     } 
   
@@ -287,14 +311,22 @@ thr_tcpMessageListen(void * parameter){
 
 void * 
 thr_tcpConnectionListen(void * parameter){
-  int sockfd, newsockfd, port;
+  int sockfd, newsockfd, port, id;
   socklen_t clilen;
   struct sockaddr_in serv_addr, cli_addr;
 
   pthread_t thread;
 
-  port = (long) parameter;
-
+  id = (long) parameter;
+  if (id < 4){
+  	port = BASE_PORT+10*id+3;
+  }else if (id > 3){
+    id = id-3;
+  	printf("Start connection listening from elev: %d\n", id);
+	port = BASE_PORT+10*id+1;
+  }
+  
+  printf("Port: %d\n", port);
   sockfd = socket(AF_INET, SOCK_STREAM, 0);
   if(sockfd < 0) 
      error("ERROR opening socket");
@@ -316,7 +348,9 @@ thr_tcpConnectionListen(void * parameter){
 
   clilen = sizeof(cli_addr);
   while(1){
+    printf("SverresNetwork: previous socket fd -> %d\n", sockfd);
     newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
+	printf("SverresNetwork: new socket fd -> %d\n", newsockfd);
     if(newsockfd < 0) 
       error("ERROR on accept");
 
@@ -324,7 +358,9 @@ thr_tcpConnectionListen(void * parameter){
     char * newConnectionIp = strdup(inet_ntoa(cli_addr.sin_addr));
     if(m_log) printf("SverresNetwork: Got a connection from %s: socket %d\n",newConnectionIp,newsockfd);
 
-    conn_add(newConnectionIp,newsockfd);
+    //conn_add(newConnectionIp,newsockfd);
+	printf("SverresNetwork - thr_tcpConnectionListen: Updating socket %d for id %d and ip %s\n", newsockfd, id, newConnectionIp);
+	conn_add(newConnectionIp,newsockfd,id);
 
     // Notify the system
     if(m_log) printf("SverresNetwork: Created a connection to %s - socket %d\n",newConnectionIp,newsockfd);
@@ -335,8 +371,9 @@ thr_tcpConnectionListen(void * parameter){
     int res = pthread_create(&thread, NULL, thr_tcpMessageListen,(void *) lfd);
     if(res != 0) error("pthread_create failed");
   }
-
+  printf("SverresNetwork - thr_tcpConnectionListen: finished %d\n");
 }
+
 
 
 void 
@@ -346,19 +383,28 @@ tcp_init(TMessageCallback messageCallback, TTcpConnectionCallback connectionCall
   conn_init();
 }
 
-
-void 
+/*void 
 tcp_startConnectionListening(int port){
   pthread_t thread;
 
   long lfd = port;
   int res = pthread_create(&thread, NULL, thr_tcpConnectionListen,(void *) lfd);
   if(res != 0) error("pthread_create failed");
+}*/
+
+void 
+tcp_startConnectionListening(int id){
+  pthread_t thread;
+  
+  long lfd = id;
+  
+  int res = pthread_create(&thread, NULL, thr_tcpConnectionListen,(void *) lfd);
+  if(res != 0) error("pthread_create failed");
 }
 
 
 void 
-tcp_openConnection(char * ip,int port){
+tcp_openConnection(char * ip,int port,int id){
   int sockfd;
   struct sockaddr_in serv_addr;
 
@@ -380,8 +426,9 @@ tcp_openConnection(char * ip,int port){
   }
 
   // Have a connection; register it and make the callback.
-  conn_add(ip,sockfd);
-
+  printf("SverresNetwork - tcp_openConnection: Updating socket %d for id %d and ip %s\n", sockfd, id, ip);
+  conn_add(ip,sockfd,id);
+  
   // Notify the system
   if(m_log) printf("SverresNetwork: Created a connection to %s - socket %d\n",ip,sockfd);
   m_connectionCallback(ip,1);
@@ -396,23 +443,31 @@ tcp_openConnection(char * ip,int port){
 
 
 void 
-tcp_send(char * ip,char * data, int datalength){
-  int socket = conn_lookup(ip);
+tcp_send(char * ip,char * data, int datalength, int id){
 
-  if(socket==0){
-    // The connection is nonexistent: Must notify
-    if(m_log) printf("SverresNetwork: Tried to write to a nonexistant connection: %s\n",ip);
-    m_connectionCallback(ip,0);
-  }
+	Message sentmsg;
+	memcpy( &sentmsg, data, sizeof(Message) );
+	if (sentmsg.role == server && sentmsg.type == req){
+		printf("(sverresnetwork.c)Sending message to elevator %d with port number %i\n", sentmsg.elevatorID, BASE_PORT+10*sentmsg.elevatorID+3);
+	}
 
-  int res = write(socket,data,datalength);
-  if(res != datalength){
-    if(m_log) printf("SverresNetwork: Writing failed to %s:%d Got %d/%d Closing\n",ip,socket,res,datalength);
-//    error("write:");
-    if(m_log) printf("SverresNetwork: Closed a connection to %s - socket %d\n",ip,socket);
-    m_connectionCallback(ip,0);
-    conn_remove(ip);
-  }
+	//int socket = conn_lookup(ip);
+	printf("SverresNetwork: id -> %d\n", id);
+	int socket = conn_lookup(ip, id);
+
+	if(socket==0){
+		// The connection is nonexistent: Must notify
+		if(m_log) printf("SverresNetwork: Tried to write to a nonexistant connection: %s\n",ip);
+		m_connectionCallback(ip,0);
+	}
+
+	int res = write(socket,data,datalength);
+	if(res != datalength){
+		if(m_log) printf("SverresNetwork: Writing failed to %s:%d Got %d/%d Closing\n",ip,socket,res,datalength);
+		//    error("write:");
+		if(m_log) printf("SverresNetwork: Closed a connection to %s - socket %d\n",ip,socket);
+		m_connectionCallback(ip,0);
+		//conn_remove(ip);
+		conn_remove(socket);
+	}
 }
-
-

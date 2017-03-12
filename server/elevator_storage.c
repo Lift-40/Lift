@@ -24,7 +24,7 @@ void addState(Elevator elev_state){
 	//printf("Attempting to add new elevator struct with IP %s\n",elev_state.ip);
     for(int i = 0; i < MAX_ELEVATORS; i++){
         if(elev_states[i].elevatorID == elev_state.elevatorID){
-			printf("(elevator_storage.c)The elev_state with ID %d already exists, updated it\n",elev_state.elevatorID);
+			printf("(elevator_storage.c)The elev_state with ID %d already exists in position %d, updated it\n",elev_state.elevatorID,i);
 			exists = 1;
 			memcpy(&elev_states[i], &elev_state, sizeof(Elevator));
 		}
@@ -44,7 +44,7 @@ Elevator getState(int elevatorID){
     int exists = 0;
     for(int i = 0; i < MAX_ELEVATORS; i++){
         if(elev_states[i].elevatorID == elevatorID){
-	    	printf("(elevator_storage.c)The elev_state with ID %d exists, returned it\n",elev_states[i].elevatorID);
+	    	printf("(elevator_storage.c)The elev_state with ID %d exists in position %d, returned it\n",elev_states[i].elevatorID, i);
 	    	exists = 1;
             return elev_states[i];
 		}

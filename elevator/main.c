@@ -16,7 +16,7 @@
 
 char serverIP[32] = "";
 
-int elevatorID = -1;
+//int elevatorID = -1;
 
 extern Elevator elevator;
 
@@ -29,13 +29,15 @@ int main(int argc, char *argv[]){
     )
 		
 	if (argc != 2){
-		printf("Port number not defined or invalid.");
+		printf("Port number not defined or invalid.\n");
 		exit(1);
 	}
 	
-	elevatorID = atoi(argv[1]);
-	
+	int elevatorID = atoi(argv[1]);
+	setFSM(elevatorID);
+	printf("Attempting to initiate network\n");
 	networkInit(elevatorID, elev);
+	printf("Network started\n");
 	
     ElevInputDevice input = elevio_getInputDevice();
 	    
@@ -53,6 +55,7 @@ int main(int argc, char *argv[]){
 			strcpy(msg.senderIP, getMyIP());
 			msg.type = elev_state;
 			msg.elevatorID = elevatorID;
+			msg.role = elev;
 			Request emptyRequest;
 			emptyRequest.floor = NUM_FLOORS + 1;
 			emptyRequest.isEmpty = true;
@@ -70,14 +73,14 @@ int main(int argc, char *argv[]){
 		printf("ServerIP: %s\n", serverIP);
 		if (!connectionAvailable(serverIP) && serverIP[0] != 0) {
 			printf("Attempting to connect to server\n");
-			Message msg;
-			msg.type = broadcast;
-			msg.elevatorID = elevatorID;
-			msg.role = elev;
-			msg.isEmpty = false;
-			strcpy(msg.destinationIP, serverIP);
-			strcpy(msg.senderIP, getMyIP());
-			sendMessage(msg);
+			Message msg1;
+			msg1.type = broadcast;
+			msg1.elevatorID = elevatorID;
+			msg1.role = elev;
+			msg1.isEmpty = false;
+			strcpy(msg1.destinationIP, serverIP);
+			strcpy(msg1.senderIP, getMyIP());
+			sendMessage(msg1);
 		}
 		
         { // Request button
@@ -94,18 +97,24 @@ int main(int argc, char *argv[]){
         }
 		
 		{ // Network
-			Message msg;
+			Message msg2;
 			// Call receive message
-			msg = receiveMessage();
-			if (msg.isEmpty == false && msg.role == server) {
+			msg2 = receiveMessage();
+			if (msg2.isEmpty == false && msg2.role == server) {
 				// if it's a request type then add it to the queue
 				printf("Message received by the elevator\n");
-				strcpy(serverIP, msg.senderIP);
-				printf("Server IP updated to %s\n", msg.senderIP);
-				if (msg.type == req && msg.request.floor < NUM_FLOORS+1 && msg.request.button < 3) {
-					fsm_onRequestButtonPress(msg.request.floor, msg.request.button, true);
+				strcpy(serverIP, msg2.senderIP);
+				printf("Server IP updated to %s\n", msg2.senderIP);
+				if (msg2.type == req && msg2.request.floor < NUM_FLOORS+1 && msg2.request.button < 3) {
+					fsm_onRequestButtonPress(msg2.request.floor, msg2.request.button, true);
 				}
-				// TODO: The light message type needs to be handled here
+				// TODO: THE LIGHT MESSAGE TYPE NEEDS TO BE HANDLE HERE
+				if (msg2.type == light_update){
+					fsm_lightUpdating(msg2.request.floor, msg2.request.button);
+				}
+				if (msg2.type == light_update_onFloorArrival){
+					fsm_lightUpdating_onFloorArrival( msg2.elev_struct.floor );
+				}
 			}
 		}
         
