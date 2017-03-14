@@ -16,13 +16,10 @@
 
 char serverIP[32] = "";
 
-//int elevatorID = -1;
-
 extern Elevator elevator;
 
 int main(int argc, char *argv[]){
-    printf("Started!\n");
-    
+        
     int inputPollRate_ms = 25;
     con_load("elevator.con",
         con_val("inputPollRate_ms", &inputPollRate_ms, "%d")
@@ -69,9 +66,9 @@ int main(int argc, char *argv[]){
 			prevTime = time(0);
 		}
 		
-		printf("(fsm.c)connectionAvailable(serverIP): %i\n", connectionAvailable(serverIP));
+		printf("(fsm.c)connectionAvailable(serverIP): %i\n", connectionAvailable( 0 ));
 		printf("ServerIP: %s\n", serverIP);
-		if (!connectionAvailable(serverIP) && serverIP[0] != 0) {
+		if (!connectionAvailable( 0 ) && serverIP[0] != 0) {
 			printf("Attempting to connect to server\n");
 			Message msg1;
 			msg1.type = broadcast;
@@ -98,20 +95,22 @@ int main(int argc, char *argv[]){
 		
 		{ // Network
 			Message msg2;
-			// Call receive message
 			msg2 = receiveMessage();
+			
 			if (msg2.isEmpty == false && msg2.role == server) {
-				// if it's a request type then add it to the queue
+				
 				printf("Message received by the elevator\n");
 				strcpy(serverIP, msg2.senderIP);
 				printf("Server IP updated to %s\n", msg2.senderIP);
+				
 				if (msg2.type == req && msg2.request.floor < NUM_FLOORS+1 && msg2.request.button < 3) {
 					fsm_onRequestButtonPress(msg2.request.floor, msg2.request.button, true);
 				}
-				// TODO: THE LIGHT MESSAGE TYPE NEEDS TO BE HANDLE HERE
+				
 				if (msg2.type == light_update){
 					fsm_lightUpdating(msg2.request.floor, msg2.request.button);
 				}
+				
 				if (msg2.type == light_update_onFloorArrival){
 					fsm_lightUpdating_onFloorArrival( msg2.elev_struct.floor );
 				}

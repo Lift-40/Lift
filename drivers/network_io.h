@@ -35,7 +35,7 @@ typedef struct {
 
 void sendMessage(Message msg);
 Message receiveMessage(void);
-bool connectionAvailable(char *ipAddress);
+bool connectionAvailable(int id);
 void broadcastIP(senderRole role, int elevatorID);
 void networkInit(int port_Number, senderRole role);
 void printReq(Request req);

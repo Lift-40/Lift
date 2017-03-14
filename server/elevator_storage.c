@@ -8,6 +8,8 @@
 
 Elevator elev_states[MAX_ELEVATORS];
 
+/*-----------------------------INTERNAL FUNCTIONS---------------------------------*/
+
 void initStates(){
     for(int i = 0; i < MAX_ELEVATORS; i++){
 		Elevator emptyElevator;
@@ -21,8 +23,8 @@ void initStates(){
 void addState(Elevator elev_state){
     int exists = 0;
 	int stored = 0;
-	//printf("Attempting to add new elevator struct with IP %s\n",elev_state.ip);
-    for(int i = 0; i < MAX_ELEVATORS; i++){
+	
+	for(int i = 0; i < MAX_ELEVATORS; i++){
         if(elev_states[i].elevatorID == elev_state.elevatorID){
 			printf("(elevator_storage.c)The elev_state with ID %d already exists in position %d, updated it\n",elev_state.elevatorID,i);
 			exists = 1;
@@ -58,7 +60,6 @@ Elevator getState(int elevatorID){
     }
 }
 
-// For now it's not needed
 void removeState(int elevatorID){
     for(int i = 0; i < MAX_ELEVATORS; i++){
         if(elev_states[i].elevatorID == elevatorID){
@@ -70,6 +71,8 @@ void removeState(int elevatorID){
         }
     }
 }
+
+/*-----------------------------EXTERNAL FUNCTIONS---------------------------------*/
 
 void storeElevator(Elevator elev) {
     addState(elev);

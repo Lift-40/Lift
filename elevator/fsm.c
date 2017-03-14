@@ -126,7 +126,7 @@ void fsm_onRequestButtonPress(int btn_floor, Button btn_type, bool reqIsFromServ
     printf("\n\n%s(%d, %s)\n", __FUNCTION__, btn_floor, elevio_button_toString(btn_type));
     elevator_print(elevator);
 	
-	printf("(fsm.c)connectionAvailable(serverIP): %i\n", connectionAvailable(serverIP));
+	printf("(fsm.c)connectionAvailable(serverIP): %i\n", connectionAvailable( 0 ));
 	
 	// In order to save all the requests in backup, otherwise we would be only saving the last request.
 	Elevator *loadedBackup;
@@ -137,7 +137,7 @@ void fsm_onRequestButtonPress(int btn_floor, Button btn_type, bool reqIsFromServ
 	loadedBackup = loadElevatorBackup(elevatorID);
 	memcpy(elevator.requests, loadedBackup -> requests, 10 * sizeof(int));
     
-	if (reqIsFromServer || !connectionAvailable(serverIP) || btn_type == B_Cab) {
+	if (reqIsFromServer || !connectionAvailable( 0 ) || btn_type == B_Cab) {
 		if(elevator.floor == btn_floor && (elevator.behaviour == EB_DoorOpen || elevator.behaviour == EB_Idle)) {
 			elevator.requests[btn_floor][btn_type] = 1;
 			strcpy(msg.destinationIP, serverIP);
@@ -160,6 +160,7 @@ void fsm_onRequestButtonPress(int btn_floor, Button btn_type, bool reqIsFromServ
 			
 			msg.type = light_update_onFloorArrival;
 			msg.elevatorID = elevatorID;
+			
 			if (serverIP[0] != 0) {
 				printf("Sending light updating message from elevator %d to the server, elevatorOnFloor\n", elevatorID);
 				sendMessage(msg);
@@ -196,7 +197,7 @@ void fsm_onRequestButtonPress(int btn_floor, Button btn_type, bool reqIsFromServ
 		}
 	}
     
-    if (!connectionAvailable(serverIP) || btn_type == B_Cab) {
+    if (!connectionAvailable( 0 ) || btn_type == B_Cab) {
 		setAllLights(elevator);
 	}
 	
@@ -211,10 +212,12 @@ void fsm_onRequestButtonPress(int btn_floor, Button btn_type, bool reqIsFromServ
 	emptyRequest.isEmpty = true;
 	msg.request = emptyRequest;
 	msg.elev_struct = elevator;
+	
 	if (serverIP[0] != 0) {
 		printf("(fsm.c)Sending elevator structure to the server, OnReqButtonPress\n");
 		sendMessage(msg);
 	}	
+	
 	if (!reqIsFromServer && btn_type != B_Cab) {
 		printf("(fsm.c)Got an internal request, attempting to send order ( %d, %02x ) to the server\n", btn_floor, btn_type);
 		// Order is from one of the elevator buttons, send it to the server
@@ -224,9 +227,9 @@ void fsm_onRequestButtonPress(int btn_floor, Button btn_type, bool reqIsFromServ
 		request.button = btn_type;
 		request.isEmpty = false;
 		msg.request = request;
-		//msg.elev_struct = elevator;
-		printf("(fsm.c)connectionAvailable(serverIP): %i\n", connectionAvailable(serverIP));
-		if (serverIP[0] != 0 && connectionAvailable(serverIP)) {
+		printf("(fsm.c)connectionAvailable(serverIP): %i\n", connectionAvailable( 0 ));
+		
+		if (serverIP[0] != 0 && connectionAvailable( 0 )) {
 			printf("(fsm.c)Sending elevator request to the server, OnReqButtonPress\n");
 			sendMessage(msg);
 		}
@@ -243,35 +246,27 @@ void fsm_onFloorArrival(int newFloor){
     outputDevice.floorIndicator(elevator.floor);
     
     switch(elevator.behaviour){
+			
     case EB_Moving:
         if(requests_shouldStop(elevator)){
             outputDevice.motorDirection(D_Stop);
             outputDevice.doorLight(1);
             elevator = requests_clearAtCurrentFloor(elevator);
-			//NEW
-			printf("Before arriving\n");
-			for(int floor = 0; floor < N_FLOORS; floor++){
-				printf(" %d | %d | %d \n", requestsMade[floor][0], requestsMade[floor][1], requestsMade[floor][2]);
-			}
-			
+						
 			for(int btn = 0; btn < N_BUTTONS; btn++){
 				requestsMade[elevator.floor][btn] = 0;
-			}
-			
-			printf("After arriving\n");
-			for(int floor = 0; floor < N_FLOORS; floor++){
-				printf(" %d | %d | %d \n", requestsMade[floor][0], requestsMade[floor][1], requestsMade[floor][2]);
-			}
+			}			
 			setAllLightsForRequestsMade();
 			
             timer_start(elevator.config.doorOpenDuration_s);
-			if (serverIP[0] == 0 || !connectionAvailable(serverIP)) {
+			if (serverIP[0] == 0 || !connectionAvailable( 0 )) {
 				setAllLights(elevator);
 			}
             
             elevator.behaviour = EB_DoorOpen;
         }
         break;
+			
     default:
         break;
     }
@@ -288,11 +283,11 @@ void fsm_onFloorArrival(int newFloor){
 	msg.request = emptyRequest;
 	elevator.elevatorID = elevatorID;
 	msg.elev_struct = elevator;
+	
 	if (serverIP[0] != 0) {
 		printf("Sending light updating message from elevator %d to the server, onFloorArrival\n", elevatorID);
 		sendMessage(msg);
-	}	
-	
+	}
 	
 	printf("Server IP: %s\n", serverIP);
 	msg.type = elev_state;
@@ -308,7 +303,8 @@ void fsm_onDoorTimeout(void){
     elevator_print(elevator);
     
     switch(elevator.behaviour){
-    case EB_DoorOpen:
+    
+	case EB_DoorOpen:
         elevator.dirn = requests_chooseDirection(elevator);
         
         outputDevice.doorLight(0);
@@ -318,10 +314,10 @@ void fsm_onDoorTimeout(void){
             elevator.behaviour = EB_Idle;
         } else {
             elevator.behaviour = EB_Moving;
-        }
-        
+        }        
         break;
-    default:
+    
+	default:
         break;
     }
     
